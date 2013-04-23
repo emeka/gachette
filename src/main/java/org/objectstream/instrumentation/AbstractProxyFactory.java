@@ -19,10 +19,33 @@
 package org.objectstream.instrumentation;
 
 
+import org.objectstream.ObjectStream;
+import org.objectstream.value.ValueObserver;
+
 public abstract class AbstractProxyFactory implements ProxyFactory {
+    private ObjectStream stream;
 
     public <T> T instrumentField(T object){
         ObjectInstrumentor<T> enhancer = new FieldInstrumentor(this);
         return enhancer.enhance(object);
     }
+
+    public <T,L> T createListenerProxy(T object, ValueObserver<L> observer) {
+        ProxyProvider<T> pf = getProxyFactory(new ListenerInterceptor(object, stream, observer, this));
+        return pf.create(object);
+    }
+
+    public <T> T createObjectProxy(T object) {
+        if(object instanceof ObjectStreamProxy){
+            return object;
+        }
+        ProxyProvider<T> pf = getProxyFactory(new ObjectInterceptor<>(object, stream, this));
+        return pf.create(object);
+    }
+
+    public void setStream(ObjectStream stream) {
+        this.stream = stream;
+    }
+
+    protected abstract <T> ProxyProvider<T> getProxyFactory(MethodInterceptor interceptor);
 }

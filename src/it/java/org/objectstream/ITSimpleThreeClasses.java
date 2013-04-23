@@ -22,8 +22,6 @@ package org.objectstream;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.objectstream.ObjectStream;
-import org.objectstream.ObjectStreamManager;
 import org.objectstream.model.C;
 import org.objectstream.value.ValueObserver;
 import org.objectstream.model.A;
@@ -33,11 +31,13 @@ import static junit.framework.Assert.assertEquals;
 
 public class ITSimpleThreeClasses {
 
+    private ObjectStreamManager manager;
     private ObjectStream stream;
 
     @Before
     public void setup() {
-        stream = ObjectStreamManager.create();
+        manager = new DefaultObjectStreamManager();
+        stream = manager.create();
     }
 
     @After
@@ -81,6 +81,8 @@ public class ITSimpleThreeClasses {
         UpdateListener listener = new UpdateListener();
 
         stream.addListener(listener).to(a).getResult();
+        //stream.observe(value(a).getResult(), listener);
+      //stream.observe(new Value(new MethodValue(realObj, method, objects, proxyFactory)), listener);
         stream.object(c).setValue(2);
 
         assertEquals(112, listener.getResult());

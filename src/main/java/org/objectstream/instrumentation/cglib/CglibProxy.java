@@ -24,10 +24,11 @@ import net.sf.cglib.transform.impl.InterceptFieldEnabled;
 import org.objectstream.instrumentation.MethodInterceptor;
 import org.objectstream.instrumentation.ObjectStreamProxy;
 import org.objectstream.instrumentation.ProxyFactory;
+import org.objectstream.instrumentation.ProxyProvider;
 
 import java.lang.reflect.Method;
 
-public class CglibProxy<T> {
+public class CglibProxy<T>  implements ProxyProvider<T> {
 
     MethodInterceptor interceptor;
 
@@ -43,7 +44,7 @@ public class CglibProxy<T> {
         return (T) e.create();
     }
 
-    public class ListenerInterceptor<T, M> implements net.sf.cglib.proxy.MethodInterceptor {
+    private class ListenerInterceptor<T, M> implements net.sf.cglib.proxy.MethodInterceptor {
         private MethodInterceptor interceptor;
 
         public ListenerInterceptor(MethodInterceptor interceptor) {

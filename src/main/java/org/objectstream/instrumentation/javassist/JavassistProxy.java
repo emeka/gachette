@@ -23,9 +23,11 @@ import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
 import org.objectstream.instrumentation.MethodInterceptor;
 import org.objectstream.instrumentation.ObjectStreamProxy;
+import org.objectstream.instrumentation.ProxyProvider;
+
 import java.lang.reflect.Method;
 
-public class JavassistProxy<T> {
+public class JavassistProxy<T> implements ProxyProvider<T> {
 
     MethodInterceptor interceptor;
 
@@ -50,7 +52,7 @@ public class JavassistProxy<T> {
         return (T) wObjPK;
     }
 
-    public class ListenerInterceptor<T, M> implements MethodHandler {
+    private class ListenerInterceptor<T, M> implements MethodHandler {
         private MethodInterceptor interceptor;
 
         public ListenerInterceptor(MethodInterceptor interceptor) {
@@ -68,6 +70,5 @@ public class JavassistProxy<T> {
             }
             return res;
         }
-
     }
 }

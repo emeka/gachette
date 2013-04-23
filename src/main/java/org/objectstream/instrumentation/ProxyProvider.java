@@ -1,9 +1,9 @@
 /**
  * Copyright 2013 Emeka Mosanya, all rights reserved.
- *
+ * <p/>
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * Proprietary and confidential.
- *
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -16,27 +16,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.instrumentation.cglib;
+package org.objectstream.instrumentation;
 
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.objectstream.instrumentation.*;
-
-import java.lang.reflect.Method;
-
-import static junit.framework.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.when;
-
-@RunWith(MockitoJUnitRunner.class)
-public class CglibProxyTest extends AbstractProxyProviderTest {
-    @Override
-    protected <T> ProxyProvider<T> getProxyFactory(MethodInterceptor interceptor) {
-        return new CglibProxy(interceptor);
-    }
+public interface ProxyProvider<T> {
+    T create(T obj);
 }

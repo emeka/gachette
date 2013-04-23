@@ -16,27 +16,19 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.instrumentation.cglib;
+package org.objectstream.instrumentation.javassist;
 
 
-import org.junit.Before;
-import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.objectstream.instrumentation.*;
-
-import java.lang.reflect.Method;
-
-import static junit.framework.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.when;
+import org.objectstream.instrumentation.AbstractProxyProviderTest;
+import org.objectstream.instrumentation.MethodInterceptor;
+import org.objectstream.instrumentation.ProxyProvider;
 
 @RunWith(MockitoJUnitRunner.class)
-public class CglibProxyTest extends AbstractProxyProviderTest {
+public class JavassistProxyTest extends AbstractProxyProviderTest {
     @Override
     protected <T> ProxyProvider<T> getProxyFactory(MethodInterceptor interceptor) {
-        return new CglibProxy(interceptor);
+        return new JavassistProxy(interceptor);
     }
 }

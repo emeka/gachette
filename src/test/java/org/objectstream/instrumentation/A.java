@@ -15,28 +15,20 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package org.objectstream.instrumentation;
 
-package org.objectstream.instrumentation.cglib;
+public class A {
+    private int value;
 
+    public int intValue(){
+        return 20;
+    }
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.objectstream.instrumentation.*;
+    public int getValue() {
+        return value;
+    }
 
-import java.lang.reflect.Method;
-
-import static junit.framework.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.when;
-
-@RunWith(MockitoJUnitRunner.class)
-public class CglibProxyTest extends AbstractProxyProviderTest {
-    @Override
-    protected <T> ProxyProvider<T> getProxyFactory(MethodInterceptor interceptor) {
-        return new CglibProxy(interceptor);
+    public void setValue(int value) {
+        this.value = value;
     }
 }

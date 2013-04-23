@@ -16,15 +16,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.instrumentation.cglib;
-
+package org.objectstream.instrumentation;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.objectstream.instrumentation.*;
+import org.objectstream.instrumentation.cglib.CglibProxy;
 
 import java.lang.reflect.Method;
 
@@ -33,10 +30,31 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
-public class CglibProxyTest extends AbstractProxyProviderTest {
-    @Override
-    protected <T> ProxyProvider<T> getProxyFactory(MethodInterceptor interceptor) {
-        return new CglibProxy(interceptor);
+public abstract class AbstractProxyProviderTest {
+    private static final Integer PROXY_VALUE = new Integer(10);
+
+    private ProxyProvider<A> proxy;
+
+    @Mock
+    MethodInterceptor interceptor;
+
+    @Before
+    public void setup(){
+        proxy = getProxyFactory(interceptor);
+        when(interceptor.intercept(any(Object.class), any(Method.class), any(Object[].class))).thenReturn(PROXY_VALUE);
     }
+
+    @Test
+    public void test(){
+        A a = new A();
+        a.setValue(20);
+
+        A proxiedValue = proxy.create(a);
+
+        assertEquals(20, a.intValue());
+        assertEquals(PROXY_VALUE.intValue(), proxiedValue.intValue());
+        assertTrue(proxiedValue instanceof ObjectStreamProxy);
+    }
+
+    protected abstract <T> ProxyProvider<T> getProxyFactory(MethodInterceptor interceptor);
 }

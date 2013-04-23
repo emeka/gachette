@@ -21,6 +21,7 @@ package org.objectstream.simple;
 
 import org.objectstream.ObjectStream;
 import org.objectstream.instrumentation.ProxyFactory;
+import org.objectstream.instrumentation.ProxyProvider;
 import org.objectstream.instrumentation.cglib.CglibProxyFactory;
 import org.objectstream.value.ListenerAdder;
 import org.objectstream.value.Value;
@@ -98,7 +99,7 @@ Object o = cons.newInstance("JLabel");
         parents.add(parent);
     }
 
-    public void setProxyFactory(CglibProxyFactory proxyFactory) {
+    public void setProxyFactory(ProxyFactory proxyFactory) {
         this.proxyFactory = proxyFactory;
     }
 }

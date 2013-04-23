@@ -18,31 +18,13 @@
 
 package org.objectstream.instrumentation.javassist;
 
-import org.objectstream.ObjectStream;
 import org.objectstream.instrumentation.AbstractProxyFactory;
-import org.objectstream.instrumentation.ListenerInterceptor;
 import org.objectstream.instrumentation.MethodInterceptor;
-import org.objectstream.instrumentation.ObjectInterceptor;
-import org.objectstream.value.ValueObserver;
+import org.objectstream.instrumentation.ProxyProvider;
 
 public class JavassistProxyFactory extends AbstractProxyFactory {
-    private final ObjectStream stream;
-
-    public JavassistProxyFactory(ObjectStream stream){
-        this.stream = stream;
-    }
-
-    public <T,L> T createListenerProxy(T object, ValueObserver<L> observer) {
-        JavassistProxy<T> pf = getProxyFactory(new ListenerInterceptor(object, stream, observer, this));
-        return pf.create(object);
-    }
-
-    public <T> T createObjectProxy(T object) {
-        JavassistProxy<T> pf = getProxyFactory(new ObjectInterceptor<>(object, stream, this));
-        return pf.create(object);
-    }
-
-    private static <T> JavassistProxy<T> getProxyFactory(MethodInterceptor interceptor) {
+    @Override
+    protected <T> ProxyProvider<T> getProxyFactory(MethodInterceptor interceptor) {
         return new JavassistProxy<T>(interceptor);
     }
 }
