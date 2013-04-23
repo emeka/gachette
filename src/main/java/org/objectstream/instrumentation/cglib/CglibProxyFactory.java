@@ -16,18 +16,33 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream;
+package org.objectstream.instrumentation.cglib;
 
-
-import org.objectstream.value.ListenerAdder;
-import org.objectstream.value.Value;
-import org.objectstream.value.ValueCalculator;
+import org.objectstream.ObjectStream;
+import org.objectstream.instrumentation.*;
 import org.objectstream.value.ValueObserver;
 
-public interface ObjectStream {
-    <T> T object(T object);
-    <T> ListenerAdder addListener(ValueObserver<T> listener);
-    <M> void observe(Value value, ValueObserver<M> listener);
-    <M> Value<M> value(ValueCalculator<M> calculator);
-    void bind(Value parent, Value child);
+public class CglibProxyFactory extends AbstractProxyFactory {
+    private final ObjectStream stream;
+
+    public CglibProxyFactory(ObjectStream stream){
+        this.stream = stream;
+    }
+
+    public <T,L> T createListenerProxy(T object, ValueObserver<L> observer) {
+        CglibProxy<T> pf = getProxyFactory(new ListenerInterceptor(object, stream, observer, this));
+        return pf.create(object);
+    }
+
+    public <T> T createObjectProxy(T object) {
+        if(object instanceof ObjectStreamProxy){
+            return object;
+        }
+        CglibProxy<T> pf = getProxyFactory(new ObjectInterceptor<>(object, stream, this));
+        return pf.create(object);
+    }
+
+    private static <T> CglibProxy<T> getProxyFactory(MethodInterceptor interceptor) {
+        return new CglibProxy<T>(interceptor);
+    }
 }

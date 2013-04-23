@@ -16,11 +16,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.value;
+package org.objectstream.instrumentation;
 
-
-import java.util.Map;
-
-public interface ValueCalculator<T> {
-    public T calculate(Map<Value,Object> dependencies);
+public interface ObjectStreamProxy {
 }

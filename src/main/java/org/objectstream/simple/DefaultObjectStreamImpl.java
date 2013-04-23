@@ -1,11 +1,31 @@
+/**
+ * Copyright 2013 Emeka Mosanya, all rights reserved.
+ *
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package org.objectstream.simple;
 
 
 import org.objectstream.ObjectStream;
-import org.objectstream.value.*;
-import org.objectstream.instrumentation.ObjectInterceptor;
 import org.objectstream.instrumentation.ProxyFactory;
-import org.objectstream.instrumentation.cglib.CglibProxy;
+import org.objectstream.instrumentation.cglib.CglibProxyFactory;
+import org.objectstream.value.ListenerAdder;
+import org.objectstream.value.Value;
+import org.objectstream.value.ValueCalculator;
+import org.objectstream.value.ValueObserver;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,6 +38,8 @@ public class DefaultObjectStreamImpl implements ObjectStream {
     private final Map<Value,Set<Value>> nodeParents = new HashMap<>();
     private final Map<Value,Set<Value>> nodeChildren = new HashMap<>();
 
+    private ProxyFactory proxyFactory;
+
 /*
 Class<?> cl = Class.forName("javax.swing.JLabel");
 Constructor<?> cons = cl.getConstructor(String.class);
@@ -27,13 +49,12 @@ Object o = cons.newInstance("JLabel");
 
     @Override
     public <T> T object(T object) {
-        ProxyFactory<T> pf = new CglibProxy<>(new ObjectInterceptor(object, this));
-        return pf.create(object);
+        return proxyFactory.createObjectProxy(object);
     }
 
     @Override
     public <T> ListenerAdder addListener(ValueObserver<T> listener) {
-        return new DefaultListenerAdderImpl(this,listener);
+        return new DefaultListenerAdderImpl(listener, proxyFactory);
     }
 
     @Override
@@ -75,5 +96,9 @@ Object o = cons.newInstance("JLabel");
         }
 
         parents.add(parent);
+    }
+
+    public void setProxyFactory(CglibProxyFactory proxyFactory) {
+        this.proxyFactory = proxyFactory;
     }
 }

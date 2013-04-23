@@ -16,11 +16,13 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.value;
+package org.objectstream.instrumentation;
 
 
-import java.util.Map;
+public abstract class AbstractProxyFactory implements ProxyFactory {
 
-public interface ValueCalculator<T> {
-    public T calculate(Map<Value,Object> dependencies);
+    public <T> T instrumentField(T object){
+        ObjectInstrumentor<T> enhancer = new FieldInstrumentor(this);
+        return enhancer.enhance(object);
+    }
 }

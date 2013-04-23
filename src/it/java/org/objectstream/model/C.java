@@ -16,11 +16,16 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.value;
+package org.objectstream.model;
 
+public class C {
+    private long value;
 
-import java.util.Map;
+    public long getValue() {
+        return value;
+    }
 
-public interface ValueCalculator<T> {
-    public T calculate(Map<Value,Object> dependencies);
+    public void setValue(long value) {
+        this.value = value;
+    }
 }

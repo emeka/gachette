@@ -16,31 +16,33 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.instrumentation;
+package org.objectstream.instrumentation.javassist;
 
-
-import org.objectstream.value.MethodValue;
-import org.objectstream.value.Value;
 import org.objectstream.ObjectStream;
+import org.objectstream.instrumentation.AbstractProxyFactory;
+import org.objectstream.instrumentation.ListenerInterceptor;
+import org.objectstream.instrumentation.MethodInterceptor;
+import org.objectstream.instrumentation.ObjectInterceptor;
 import org.objectstream.value.ValueObserver;
 
-import java.lang.reflect.Method;
+public class JavassistProxyFactory extends AbstractProxyFactory {
+    private final ObjectStream stream;
 
-public class ListenerInterceptor<T,M> implements MethodInterceptor {
-    private ObjectStream stream;
-    private T realObj;
-    private ValueObserver<M> listener;
-    private final ProxyFactory proxyFactory;
-
-    public ListenerInterceptor(T realObj, ObjectStream stream, ValueObserver<M> listener, ProxyFactory proxyFactory) {
-        this.realObj = realObj;
+    public JavassistProxyFactory(ObjectStream stream){
         this.stream = stream;
-        this.listener = listener;
-        this.proxyFactory = proxyFactory;
     }
 
-    public Object intercept(Object o, Method method, Object[] objects) {
-        stream.observe(new Value(new MethodValue(realObj, method, objects, proxyFactory)), listener);
-        return null;
+    public <T,L> T createListenerProxy(T object, ValueObserver<L> observer) {
+        JavassistProxy<T> pf = getProxyFactory(new ListenerInterceptor(object, stream, observer, this));
+        return pf.create(object);
+    }
+
+    public <T> T createObjectProxy(T object) {
+        JavassistProxy<T> pf = getProxyFactory(new ObjectInterceptor<>(object, stream, this));
+        return pf.create(object);
+    }
+
+    private static <T> JavassistProxy<T> getProxyFactory(MethodInterceptor interceptor) {
+        return new JavassistProxy<T>(interceptor);
     }
 }
