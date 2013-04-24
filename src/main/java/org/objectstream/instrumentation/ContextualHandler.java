@@ -16,12 +16,33 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.transaction;
+package org.objectstream.instrumentation;
 
 
-import org.objectstream.value.Value;
+import org.objectstream.context.CallContext;
 
-public interface ValueContainer<T> {
-    void setValue(Value<T> value);
-    Value<T> getValue();
+import java.lang.reflect.Method;
+
+public class ContextualHandler<T> implements MethodHandler {
+    private final T realObj;
+    private final CallContext context;
+    private final MethodHandler defaultHandler;
+
+    public ContextualHandler(T realObj, CallContext context, MethodHandler defaultHandler) {
+        this.realObj = realObj;
+        this.context = context;
+        this.defaultHandler = defaultHandler;
+    }
+
+    public Object handle(Object o, Method method, Object[] objects) {
+        MethodHandler handler;
+
+        if(context.getMethodHandlerStack().empty()){
+            handler = defaultHandler;
+        } else {
+            handler = context.getMethodHandlerStack().peek();
+        }
+
+        return handler.handle(realObj, method, objects);
+    }
 }

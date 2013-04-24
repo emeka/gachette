@@ -24,13 +24,14 @@ import org.objectstream.value.ValueObserver;
 
 public class FluentObserveWith {
     private final ObjectStreamProvider streamProvider;
+    private final Value value;
     
-    public FluentObserveWith(ObjectStreamProvider streamProvider){
+    public FluentObserveWith(ObjectStreamProvider streamProvider, Value value){
         this.streamProvider = streamProvider;
+        this.value = value;
     }
     
-    public <M> void with(ValueObserver<M> observer) {
-        Value<M> value = null; //Get Value from CallContext       
+    public void with(ValueObserver observer) {
         streamProvider.observe(value, observer);
     }
 }

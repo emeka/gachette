@@ -16,10 +16,36 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.instrumentation;
+package org.objectstream.context;
 
-import java.lang.reflect.Method;
+import org.objectstream.instrumentation.MethodHandler;
+import org.objectstream.value.Value;
 
-public interface MethodInterceptor {
-    Object intercept(Object o, Method method, Object[] objects);
+import java.util.Stack;
+
+public abstract class DefaultCallContext implements CallContext {
+    private final Stack<MethodHandler> methodHandlerStack = new Stack<>();
+    private final Stack<Value> valueStack = new Stack<>();
+
+    @Override
+    public void reset() {
+        methodHandlerStack.clear();;
+        valueStack.clear();
+    }
+
+    @Override
+    public Stack<MethodHandler> getMethodHandlerStack() {
+        return methodHandlerStack;
+    }
+
+    @Override
+    public Stack<Value> getValueStack() {
+        return valueStack;
+    }
+
+    /**
+     * Just to prevent instantiation.
+     * @return
+     */
+    public abstract boolean threadSafe();
 }

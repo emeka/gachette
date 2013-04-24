@@ -19,24 +19,18 @@
 package org.objectstream.instrumentation.cglib;
 
 
-import org.junit.Before;
-import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.objectstream.instrumentation.*;
-
-import java.lang.reflect.Method;
 
 import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CglibProxyTest extends AbstractProxyProviderTest {
     @Override
-    protected <T> ProxyProvider<T> getProxyFactory(MethodInterceptor interceptor) {
+    protected <T> ProxyProvider<T> getProxyFactory(MethodHandler interceptor) {
         return new CglibProxy(interceptor);
     }
 }

@@ -18,21 +18,37 @@
 
 package org.objectstream.api;
 
+import org.objectstream.context.CallContext;
+import org.objectstream.instrumentation.ValueHandler;
 import org.objectstream.spi.ObjectStreamProvider;
+import org.objectstream.value.Value;
 
 public class FluentObserveValue {
-    private final ObjectStreamProvider streamProvider;
+    private static final String ERROR_BLURB =
+            "Please ensure that stream.observe().value() takes a method call to an ObjectStream object as parameter," +
+            "for example stream.observe().value(foo.getResult()).with(observer) with foo an ObjectStream proxy";
 
-    public FluentObserveValue(ObjectStreamProvider stream) {
+    private final ObjectStreamProvider streamProvider;
+    private final CallContext context;
+
+    public FluentObserveValue(ObjectStreamProvider stream, CallContext context) {
         this.streamProvider = stream;
+        this.context = context;
     }
 
     public FluentObserveWith value(Object methodCall) {
-        if (methodCall != null) {
-            throw new RuntimeException(String.format("Expecting null value but got %s.  You must us an ObjectStream object.",
-                    methodCall));
+        if(! (context.getMethodHandlerStack().peek() instanceof ValueHandler)){
+            throw new RuntimeException("Context error: method handler should be a ValueHandler. " + ERROR_BLURB );
         }
-        //Add other check on the context to be sure that we have call an ObjectStream instance.
-        return new FluentObserveWith(streamProvider);
+
+        if(context.getValueStack().empty()){
+            throw new RuntimeException("Context error: value not found. " + ERROR_BLURB);
+        }
+        Value value = context.getValueStack().pop();
+
+        //We have what we are looking for, so we can clean the context.
+        context.reset();
+
+        return new FluentObserveWith(streamProvider, value);
     }
 }

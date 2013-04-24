@@ -21,7 +21,6 @@ package org.objectstream.instrumentation;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
-import org.objectstream.instrumentation.cglib.CglibProxy;
 
 import java.lang.reflect.Method;
 
@@ -36,12 +35,12 @@ public abstract class AbstractProxyProviderTest {
     private ProxyProvider<A> proxy;
 
     @Mock
-    MethodInterceptor interceptor;
+    MethodHandler interceptor;
 
     @Before
     public void setup(){
         proxy = getProxyFactory(interceptor);
-        when(interceptor.intercept(any(Object.class), any(Method.class), any(Object[].class))).thenReturn(PROXY_VALUE);
+        when(interceptor.handle(any(Object.class), any(Method.class), any(Object[].class))).thenReturn(PROXY_VALUE);
     }
 
     @Test
@@ -56,5 +55,5 @@ public abstract class AbstractProxyProviderTest {
         assertTrue(proxiedValue instanceof ObjectStreamProxy);
     }
 
-    protected abstract <T> ProxyProvider<T> getProxyFactory(MethodInterceptor interceptor);
+    protected abstract <T> ProxyProvider<T> getProxyFactory(MethodHandler interceptor);
 }

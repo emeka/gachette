@@ -19,40 +19,40 @@
 package org.objectstream.instrumentation;
 
 
+import org.objectstream.context.CallContext;
 import org.objectstream.spi.ObjectStreamProvider;
-import org.objectstream.transaction.DependencyContext;
 import org.objectstream.value.MethodValue;
 import org.objectstream.value.Value;
 
 import java.lang.reflect.Method;
 
-public class ObjectInterceptor<T> implements MethodInterceptor {
+public class EvalHandler<T> implements MethodHandler {
     private final ObjectStreamProvider streamProvider;
-    private final T realObj;
     private final ProxyFactory proxyFactory;
+    private final CallContext context;
 
-    public ObjectInterceptor(T realObj, ObjectStreamProvider stream, ProxyFactory proxyFactory) {
-        this.realObj = realObj;
+    public EvalHandler(ObjectStreamProvider stream, ProxyFactory proxyFactory, CallContext context) {
         this.streamProvider = stream;
         this.proxyFactory = proxyFactory;
+        this.context = context;
     }
 
-    public Object intercept(Object o, Method method, Object[] objects) {
+    public Object handle(Object object, Method method, Object[] objects) {
 
         Object res = null;
         if (method.getReturnType() != Void.TYPE) {
-            Value value = streamProvider.value(new MethodValue(realObj, method, objects, proxyFactory));
-            DependencyContext.push(value);
+            Value value = streamProvider.value(new MethodValue(object, method, objects, proxyFactory));
+            context.getValueStack().push(value);
 
-            res = value.getValue();
+            res = value.getValue(); //this call must be between the push and the pop
 
-            DependencyContext.pop();
-            if (!DependencyContext.empty()) {
-                streamProvider.bind(DependencyContext.top(), value);
+            context.getValueStack().pop();
+            if (!context.getValueStack().empty()) {
+                streamProvider.bind(context.getValueStack().peek(), value);
             }
         } else {
             try {
-                res = method.invoke(realObj, objects);
+                res = method.invoke(object, objects);
             } catch (RuntimeException e) {
                 throw e;
             } catch (Exception e) {

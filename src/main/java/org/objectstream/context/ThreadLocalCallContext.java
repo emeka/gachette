@@ -16,23 +16,40 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.transaction;
+package org.objectstream.context;
 
+
+import org.objectstream.instrumentation.MethodHandler;
 import org.objectstream.value.Value;
 
+import java.util.Stack;
 
-public class ValueContainerImpl<T> implements ValueContainer<T> {
+public class ThreadLocalCallContext implements CallContext {
 
-    private Value<T> value;
+    public static final ThreadLocal<CallContext> threadLocalCallContext = new ThreadLocal<CallContext>() {
+        @Override
+        protected CallContext initialValue() {
+            return new DefaultCallContext(){
+                @Override
+                public boolean threadSafe() {
+                    return true;
+                }
+            };
+        }
+    };
 
     @Override
-    public void setValue(Value<T> value) {
-        this.value = value;
+    public Stack<MethodHandler> getMethodHandlerStack() {
+        return threadLocalCallContext.get().getMethodHandlerStack();
     }
 
     @Override
-    public Value<T> getValue() {
-        return value;
+    public Stack<Value> getValueStack() {
+        return threadLocalCallContext.get().getValueStack();
     }
 
+    @Override
+    public void reset() {
+        threadLocalCallContext.get().reset();
+    }
 }

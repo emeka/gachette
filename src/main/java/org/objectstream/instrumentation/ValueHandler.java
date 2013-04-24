@@ -19,28 +19,33 @@
 package org.objectstream.instrumentation;
 
 
+import org.objectstream.context.CallContext;
 import org.objectstream.spi.ObjectStreamProvider;
 import org.objectstream.value.MethodValue;
+import org.objectstream.value.Value;
 
 import java.lang.reflect.Method;
 
-public class ValueInterceptor<T> implements MethodInterceptor {
+public class ValueHandler<T> implements MethodHandler {
     private final ObjectStreamProvider streamProvider;
-    private final T realObj;
     private final ProxyFactory proxyFactory;
+    private final CallContext context;
 
-    public ValueInterceptor(T realObj, ObjectStreamProvider stream, ProxyFactory proxyFactory) {
-        this.realObj = realObj;
+    public ValueHandler(ObjectStreamProvider stream, ProxyFactory proxyFactory, CallContext context) {
         this.streamProvider = stream;
         this.proxyFactory = proxyFactory;
+        this.context = context;
     }
 
-    public Object intercept(Object o, Method method, Object[] objects) {
-        if (method.getReturnType() == Void.TYPE) {
-            throw new RuntimeException(String.format("Trying to get a value from a void method: '%s' on %s.", method, o));
+    public Object handle(Object object, Method method, Object[] objects) {
+        if (method.getReturnType() != Void.TYPE) {
+            Value value = streamProvider.value(new MethodValue(object, method, objects, proxyFactory));
+            //Do not forget to pop the value in command.
+            context.getValueStack().push(value);
+        } else {
+            throw new RuntimeException("Cannot get value from a void method");
         }
 
-
-        return streamProvider.value(new MethodValue(realObj, method, objects, proxyFactory));
+        return null;
     }
 }

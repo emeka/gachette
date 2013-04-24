@@ -22,14 +22,12 @@ package org.objectstream;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.objectstream.model.C;
-import org.objectstream.value.Value;
-import org.objectstream.value.ValueObserver;
 import org.objectstream.model.A;
 import org.objectstream.model.B;
+import org.objectstream.model.C;
+import org.objectstream.value.ValueObserver;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
 
 public class ITSimpleThreeClasses {
 
@@ -106,6 +104,7 @@ public class ITSimpleThreeClasses {
         assertEquals(2, c.getValue());
     }
 
+    @Test
     public void testSimpleWithListener() {
         c.setValue(1);
         b.setValue(10);
@@ -115,8 +114,9 @@ public class ITSimpleThreeClasses {
 
         UpdateListener listener = new UpdateListener();
 
+        a.getResult();
         stream.observe().value(a.getResult()).with(listener);
-        stream.object(c).setValue(2);
+        c.setValue(2);
         assertEquals(112, listener.getResult());
     }
 

@@ -19,6 +19,8 @@
 package org.objectstream.instrumentation;
 
 
+import org.objectstream.context.CallContext;
+import org.objectstream.context.ThreadLocalCallContext;
 import org.objectstream.spi.ObjectStreamProvider;
 
 public abstract class AbstractProxyFactory implements ProxyFactory {
@@ -33,7 +35,8 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
         if(object instanceof ObjectStreamProxy){
             return object;
         }
-        ProxyProvider<T> pf = getProxyFactory(new ObjectInterceptor<>(object, streamProvider, this));
+        CallContext context = new ThreadLocalCallContext();
+        ProxyProvider<T> pf = getProxyFactory(new ContextualHandler<>(object, context,new EvalHandler<>(streamProvider, this, context)));
         return pf.create(object);
     }
 
@@ -41,5 +44,5 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
         this.streamProvider = streamProvider;
     }
 
-    protected abstract <T> ProxyProvider<T> getProxyFactory(MethodInterceptor interceptor);
+    protected abstract <T> ProxyProvider<T> getProxyFactory(MethodHandler interceptor);
 }

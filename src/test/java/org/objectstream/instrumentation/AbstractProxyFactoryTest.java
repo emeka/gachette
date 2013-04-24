@@ -21,5 +21,5 @@ package org.objectstream.instrumentation;
 public abstract class AbstractProxyFactoryTest {
 
 
-    protected abstract <T> ProxyProvider<T> getProxyFactory(MethodInterceptor interceptor);
+    protected abstract <T> ProxyProvider<T> getProxyFactory(MethodHandler interceptor);
 }

@@ -16,28 +16,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.transaction;
-import org.objectstream.value.Value;
+package org.objectstream.instrumentation;
 
+import java.lang.reflect.Method;
 
-public class ThreadSafeValueContainer<T> implements ValueContainer<T> {
-
-    private static ThreadLocal<ValueContainer> valueContainer = new ThreadLocal<>();
-
-    static ValueContainer threadSafeValueContainer() {
-        if (valueContainer.get() == null) {
-            valueContainer.set(new ValueContainerImpl());
-        }
-        return valueContainer.get();
-    }
-
-    @Override
-    public void setValue(Value<T> value) {
-        threadSafeValueContainer().setValue(value);
-    }
-
-    @Override
-    public Value<T> getValue() {
-        return threadSafeValueContainer().getValue();
-    }
+public interface MethodHandler {
+    Object handle(Object o, Method method, Object[] objects);
 }
