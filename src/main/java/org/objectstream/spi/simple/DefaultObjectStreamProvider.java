@@ -48,7 +48,7 @@ Object o = cons.newInstance("JLabel");
     @Override
     public <M> void observe(Value<M> value, ValueObserver<M> observer) {
         if(!nodeListeners.containsKey(value)){
-            Set listeners = new HashSet <>();
+            Set<ValueObserver> listeners = new HashSet<>();
             nodeListeners.put(value, listeners);
         }
 
@@ -57,8 +57,8 @@ Object o = cons.newInstance("JLabel");
     }
 
     @Override
-    public <M> Value<M> value(ValueCalculator<M> calculator) {
-        Value<M> value = nodes.get(calculator);
+    public Value value(ValueCalculator calculator) {
+        Value value = nodes.get(calculator);
         if(value == null){
             value = new Value(calculator);
             nodes.put(calculator, value);

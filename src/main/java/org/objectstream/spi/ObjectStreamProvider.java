@@ -23,7 +23,7 @@ import org.objectstream.value.ValueCalculator;
 import org.objectstream.value.ValueObserver;
 
 public interface ObjectStreamProvider {
-    <M> Value<M> value(ValueCalculator<M> calculator);
+    Value value(ValueCalculator calculator);
 
     <M> void observe(Value<M> value, ValueObserver<M> observer);
 
