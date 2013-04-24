@@ -25,7 +25,7 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
     private ObjectStreamProvider streamProvider;
 
     public <T> T instrumentField(T object){
-        ObjectInstrumentor<T> enhancer = new FieldInstrumentor(this);
+        ObjectInstrumentor enhancer = new FieldInstrumentor(this);
         return enhancer.enhance(object);
     }
 
@@ -36,14 +36,6 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
         ProxyProvider<T> pf = getProxyFactory(new ObjectInterceptor<>(object, streamProvider, this));
         return pf.create(object);
     }
-
-    public <T> T createValueProxy(T object) {
-         if(object instanceof ObjectStreamProxy){
-             return object;
-         }
-         ProxyProvider<T> pf = getProxyFactory(new ValueInterceptor<>(object, streamProvider, this));
-         return pf.create(object);
-     }
 
     public void setStreamProvider(ObjectStreamProvider streamProvider) {
         this.streamProvider = streamProvider;

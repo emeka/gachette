@@ -31,10 +31,9 @@ public class FieldInstrumentor implements ObjectInstrumentor {
     }
 
     @Override
-    public Object enhance(Object object) {
+    public <T> T enhance(T object) {
         //1. get the list of object properties (we do not work work with basic types yet)
         //2. for each property, replace with the proxy.
-
         try {
             for (PropertyDescriptor propertyDescriptor :
                     Introspector.getBeanInfo(object.getClass(), Object.class).getPropertyDescriptors()) {
@@ -45,8 +44,8 @@ public class FieldInstrumentor implements ObjectInstrumentor {
                     try {
                         originalValue = read.invoke(object);
                         if (originalValue != null) {
-                            Object proxiedValue = proxyFactory.createObjectProxy(originalValue);
-                            write.invoke(object, proxiedValue);
+                            Object proxy = proxyFactory.createObjectProxy(originalValue);
+                            write.invoke(object, proxy);
                         }
                     } catch (RuntimeException e) {
                         throw e;

@@ -20,6 +20,5 @@ package org.objectstream.instrumentation;
 
 public interface ProxyFactory {
     <T> T createObjectProxy(T object);
-    <T> T createValueProxy(T object);
     <T> T instrumentField(T object);
 }
