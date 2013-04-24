@@ -16,10 +16,33 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.instrumentation;
+package org.objectstream;
 
-public interface ProxyFactory {
-    <T> T createObjectProxy(T object);
-    <T> T createValueProxy(T object);
-    <T> T instrumentField(T object);
+import org.objectstream.api.FluentObserveValue;
+import org.objectstream.instrumentation.ProxyFactory;
+import org.objectstream.spi.ObjectStreamProvider;
+
+public class DefaultObjectStream implements ObjectStream {
+
+    private ProxyFactory proxyFactory;
+    private ObjectStreamProvider streamProvider;
+
+    @Override
+    public <T> T object(T object) {
+        return proxyFactory.createObjectProxy(object);
+    }
+
+    @Override
+    public FluentObserveValue observe() {
+        //Set CallContext to observe
+        return new FluentObserveValue(streamProvider);
+    }
+    
+    public void setProxyFactory(ProxyFactory proxyFactory) {
+        this.proxyFactory = proxyFactory;
+    }
+    
+    public void setStreamProvider(ObjectStreamProvider streamProvider) {
+        this.streamProvider = streamProvider;
+    }
 }

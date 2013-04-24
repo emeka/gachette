@@ -16,31 +16,28 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.instrumentation;
-
-
-import org.objectstream.value.MethodValue;
+package org.objectstream.transaction;
 import org.objectstream.value.Value;
-import org.objectstream.ObjectStream;
-import org.objectstream.value.ValueObserver;
 
-import java.lang.reflect.Method;
 
-public class ListenerInterceptor<T,M> implements MethodInterceptor {
-    private ObjectStream stream;
-    private T realObj;
-    private ValueObserver<M> listener;
-    private final ProxyFactory proxyFactory;
+public class ThreadSafeValueContainer<T> implements ValueContainer<T> {
 
-    public ListenerInterceptor(T realObj, ObjectStream stream, ValueObserver<M> listener, ProxyFactory proxyFactory) {
-        this.realObj = realObj;
-        this.stream = stream;
-        this.listener = listener;
-        this.proxyFactory = proxyFactory;
+    private static ThreadLocal<ValueContainer> valueContainer = new ThreadLocal<>();
+
+    static ValueContainer threadSafeValueContainer() {
+        if (valueContainer.get() == null) {
+            valueContainer.set(new ValueContainerImpl());
+        }
+        return valueContainer.get();
     }
 
-    public Object intercept(Object o, Method method, Object[] objects) {
-        stream.observe(new Value(new MethodValue(realObj, method, objects, proxyFactory)), listener);
-        return null;
+    @Override
+    public void setValue(Value<T> value) {
+        threadSafeValueContainer().setValue(value);
+    }
+
+    @Override
+    public Value<T> getValue() {
+        return threadSafeValueContainer().getValue();
     }
 }

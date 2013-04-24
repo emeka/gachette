@@ -16,22 +16,23 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.simple;
+package org.objectstream.api;
 
-import org.objectstream.instrumentation.ProxyFactory;
-import org.objectstream.value.ListenerAdder;
-import org.objectstream.value.ValueObserver;
+import org.objectstream.spi.ObjectStreamProvider;
 
-public class DefaultListenerAdderImpl<L> implements ListenerAdder {
-    private final ProxyFactory proxyFactory;
-    private final ValueObserver<L> listener;
+public class FluentObserveValue {
+    private final ObjectStreamProvider streamProvider;
 
-    public DefaultListenerAdderImpl(ValueObserver<L> listener, ProxyFactory proxyFactory){
-        this.listener = listener;
-        this.proxyFactory = proxyFactory;
+    public FluentObserveValue(ObjectStreamProvider stream) {
+        this.streamProvider = stream;
     }
 
-    public <T> T to(T object) {
-        return proxyFactory.createListenerProxy(object, listener);
+    public FluentObserveWith value(Object methodCall) {
+        if (methodCall != null) {
+            throw new RuntimeException(String.format("Expecting null value but got %s.  You must us an ObjectStream object.",
+                    methodCall));
+        }
+        //Add other check on the context to be sure that we have call an ObjectStream instance.
+        return new FluentObserveWith(streamProvider);
     }
 }

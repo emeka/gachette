@@ -16,14 +16,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.simple;
+package org.objectstream.spi.simple;
 
 
-import org.objectstream.ObjectStream;
 import org.objectstream.instrumentation.ProxyFactory;
-import org.objectstream.instrumentation.ProxyProvider;
-import org.objectstream.instrumentation.cglib.CglibProxyFactory;
-import org.objectstream.value.ListenerAdder;
+import org.objectstream.spi.ObjectStreamProvider;
 import org.objectstream.value.Value;
 import org.objectstream.value.ValueCalculator;
 import org.objectstream.value.ValueObserver;
@@ -33,7 +30,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class DefaultObjectStreamImpl implements ObjectStream {
+public class DefaultObjectStreamProvider implements ObjectStreamProvider {
     private final Map<ValueCalculator, Value> nodes = new HashMap<>();
     private final Map<Value, Set<ValueObserver>> nodeListeners = new HashMap<>();
     private final Map<Value,Set<Value>> nodeParents = new HashMap<>();
@@ -49,24 +46,14 @@ Object o = cons.newInstance("JLabel");
  */
 
     @Override
-    public <T> T object(T object) {
-        return proxyFactory.createObjectProxy(object);
-    }
-
-    @Override
-    public <T> ListenerAdder addListener(ValueObserver<T> listener) {
-        return new DefaultListenerAdderImpl(listener, proxyFactory);
-    }
-
-    @Override
-    public <L> void observe(Value value, ValueObserver<L> listener) {
+    public <M> void observe(Value<M> value, ValueObserver<M> observer) {
         if(!nodeListeners.containsKey(value)){
             Set listeners = new HashSet <>();
             nodeListeners.put(value, listeners);
         }
 
         Set<ValueObserver> listeners = nodeListeners.get(value);
-        listeners.add(listener);
+        listeners.add(observer);
     }
 
     @Override

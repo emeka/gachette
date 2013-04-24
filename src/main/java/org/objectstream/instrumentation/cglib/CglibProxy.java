@@ -20,10 +20,8 @@ package org.objectstream.instrumentation.cglib;
 
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodProxy;
-import net.sf.cglib.transform.impl.InterceptFieldEnabled;
 import org.objectstream.instrumentation.MethodInterceptor;
 import org.objectstream.instrumentation.ObjectStreamProxy;
-import org.objectstream.instrumentation.ProxyFactory;
 import org.objectstream.instrumentation.ProxyProvider;
 
 import java.lang.reflect.Method;

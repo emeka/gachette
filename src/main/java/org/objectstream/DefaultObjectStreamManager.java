@@ -19,14 +19,16 @@
 package org.objectstream;
 
 import org.objectstream.instrumentation.cglib.CglibProxyFactory;
-import org.objectstream.simple.DefaultObjectStreamImpl;
+import org.objectstream.spi.simple.DefaultObjectStreamProvider;
 
 public class DefaultObjectStreamManager implements ObjectStreamManager {
     @Override
     public ObjectStream create(){
-        DefaultObjectStreamImpl objectStream = new DefaultObjectStreamImpl();
+        DefaultObjectStreamProvider objectStreamProvider = new DefaultObjectStreamProvider();
+
+        DefaultObjectStream objectStream = new DefaultObjectStream();
         CglibProxyFactory pf = new CglibProxyFactory();
-        pf.setStream(objectStream);
+        pf.setStreamProvider(objectStreamProvider);
         objectStream.setProxyFactory(pf);
         return objectStream;
     }

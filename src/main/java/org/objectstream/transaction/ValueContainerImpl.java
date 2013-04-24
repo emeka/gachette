@@ -16,10 +16,23 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.instrumentation;
+package org.objectstream.transaction;
 
-public interface ProxyFactory {
-    <T> T createObjectProxy(T object);
-    <T> T createValueProxy(T object);
-    <T> T instrumentField(T object);
+import org.objectstream.value.Value;
+
+
+public class ValueContainerImpl<T> implements ValueContainer<T> {
+
+    private Value<T> value;
+
+    @Override
+    public void setValue(Value<T> value) {
+        this.value = value;
+    }
+
+    @Override
+    public Value<T> getValue() {
+        return value;
+    }
+
 }

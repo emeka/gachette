@@ -23,21 +23,30 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.objectstream.model.C;
+import org.objectstream.value.Value;
 import org.objectstream.value.ValueObserver;
 import org.objectstream.model.A;
 import org.objectstream.model.B;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
 
 public class ITSimpleThreeClasses {
 
     private ObjectStreamManager manager;
     private ObjectStream stream;
+    private A a;
+    private B b;
+    private C c;
 
     @Before
     public void setup() {
         manager = new DefaultObjectStreamManager();
         stream = manager.create();
+
+        a = stream.object(new A());
+        b = stream.object(new B());
+        c = stream.object(new C());
     }
 
     @After
@@ -46,45 +55,68 @@ public class ITSimpleThreeClasses {
     }
 
     @Test
-    public void testSimple() {
-        C c = new C();
+    public void testSimpleSetValueBeforeProxying() {
+        c = new C();
+        b = new B();
+        a = new A();
+
         c.setValue(1);
-        B b = new B();
         b.setValue(10);
         b.setC(c);
-        A a = new A();
         a.setValue(100);
         a.setB(b);
 
+        assertEquals(100, a.getValue());
         assertEquals(111, a.getResult());
         assertEquals(100, stream.object(a).getValue());
         assertEquals(111, stream.object(a).getResult());
+        assertEquals(10, stream.object(b).getValue());
+        assertEquals(11, stream.object(b).getResult());
+        assertEquals(1, stream.object(c).getValue());
 
         stream.object(c).setValue(2);
+
+        assertEquals(100, stream.object(a).getValue());
         assertEquals(112, stream.object(a).getResult());
+        assertEquals(10, stream.object(b).getValue());
+        assertEquals(12, stream.object(b).getResult());
+        assertEquals(2, stream.object(c).getValue());
     }
 
-
-    public void testSimpleWithListener() {
-        C c = new C();
+    @Test
+    public void testSimpleSetValueOnProxy() {
         c.setValue(1);
-        B b = new B();
         b.setValue(10);
         b.setC(c);
-        A a = new A();
         a.setValue(100);
         a.setB(b);
 
         assertEquals(111, a.getResult());
-        assertEquals(111, stream.object(a).getResult());
+        assertEquals(100, a.getValue());
+        assertEquals(10, b.getValue());
+        assertEquals(11, b.getResult());
+        assertEquals(1, c.getValue());
+
+        c.setValue(2);
+
+        assertEquals(100, a.getValue());
+        assertEquals(112, a.getResult());
+        assertEquals(10, b.getValue());
+        assertEquals(12, b.getResult());
+        assertEquals(2, c.getValue());
+    }
+
+    public void testSimpleWithListener() {
+        c.setValue(1);
+        b.setValue(10);
+        b.setC(c);
+        a.setValue(100);
+        a.setB(b);
 
         UpdateListener listener = new UpdateListener();
 
-        stream.addListener(listener).to(a).getResult();
-        //stream.observe(value(a).getResult(), listener);
-      //stream.observe(new Value(new MethodValue(realObj, method, objects, proxyFactory)), listener);
+        stream.observe().value(a.getResult()).with(listener);
         stream.object(c).setValue(2);
-
         assertEquals(112, listener.getResult());
     }
 
@@ -95,7 +127,7 @@ public class ITSimpleThreeClasses {
             return result;
         }
 
-        public void update(T result){
+        public void update(T result) {
             this.result = result;
         }
     }

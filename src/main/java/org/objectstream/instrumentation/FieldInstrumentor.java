@@ -18,7 +18,6 @@
 
 package org.objectstream.instrumentation;
 
-import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;

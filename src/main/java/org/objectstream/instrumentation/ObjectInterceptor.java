@@ -19,21 +19,21 @@
 package org.objectstream.instrumentation;
 
 
+import org.objectstream.spi.ObjectStreamProvider;
+import org.objectstream.transaction.DependencyContext;
 import org.objectstream.value.MethodValue;
 import org.objectstream.value.Value;
-import org.objectstream.ObjectStream;
-import org.objectstream.transaction.DependencyContext;
 
 import java.lang.reflect.Method;
 
-public class ObjectInterceptor<T, M> implements MethodInterceptor {
-    private final ObjectStream stream;
+public class ObjectInterceptor<T> implements MethodInterceptor {
+    private final ObjectStreamProvider streamProvider;
     private final T realObj;
     private final ProxyFactory proxyFactory;
 
-    public ObjectInterceptor(T realObj, ObjectStream stream, ProxyFactory proxyFactory) {
+    public ObjectInterceptor(T realObj, ObjectStreamProvider stream, ProxyFactory proxyFactory) {
         this.realObj = realObj;
-        this.stream = stream;
+        this.streamProvider = stream;
         this.proxyFactory = proxyFactory;
     }
 
@@ -41,14 +41,14 @@ public class ObjectInterceptor<T, M> implements MethodInterceptor {
 
         Object res = null;
         if (method.getReturnType() != Void.TYPE) {
-            Value value = stream.value(new MethodValue(realObj, method, objects, proxyFactory));
+            Value value = streamProvider.value(new MethodValue(realObj, method, objects, proxyFactory));
             DependencyContext.push(value);
 
             res = value.getValue();
 
             DependencyContext.pop();
             if (!DependencyContext.empty()) {
-                stream.bind(DependencyContext.top(), value);
+                streamProvider.bind(DependencyContext.top(), value);
             }
         } else {
             try {
