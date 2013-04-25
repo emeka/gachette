@@ -18,9 +18,32 @@
 
 package org.objectstream.value;
 
+public class ConstantEvaluator implements Evaluator<Object> {
+    private final Object value;
 
-import java.util.Map;
+    public ConstantEvaluator(Object value){
+        this.value = value;
+    }
 
-public interface ValueCalculator<T> {
-    public T calculate(Map<Value,Object> dependencies);
+    @Override
+    public Object eval() {
+        return value;
+    }
+
+    public int hashCode() {
+        return value.hashCode();
+    }
+
+    @Override public boolean equals(Object object) {
+        if(object == this) return true;
+        if(object == null) return false;
+        if(this.getClass() != object.getClass()) return false;
+        ConstantEvaluator other = (ConstantEvaluator) object;
+
+        return this.value.equals(other.value);
+    }
+
+    public String toString(){
+        return String.format("Constant(%s)", value);
+    }
 }

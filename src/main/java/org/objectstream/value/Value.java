@@ -19,25 +19,21 @@
 package org.objectstream.value;
 
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class Value<M> {
 
-    private final ValueCalculator<M> calculator;
-    private final Map<Value, Object> dependencies = new HashMap<>();
+    private final Evaluator<M> calculator;
 
     private M value;
     private boolean dirty = true;
 
-    public Value(ValueCalculator calculator) {
+    public Value(Evaluator calculator) {
         this(calculator, false);
     }
 
-    public Value(ValueCalculator calculator, boolean calculate){
+    public Value(Evaluator calculator, boolean evaluate){
         this.calculator = calculator;
-        if(calculate){
-            getValue();
+        if(evaluate){
+            eval();
         }
     }
 
@@ -45,35 +41,37 @@ public class Value<M> {
         return dirty;
     }
 
-    public M getValue() {
+    public void setDirty(boolean dirty) {
+        this.dirty = dirty;
+    }
+
+    public M getValue(){
+        return value;
+    }
+
+    public M eval() {
         if(dirty){
-            value = calculateValue(dependencies);
+            value = calculator.eval();
             dirty = false;
         }
 
         return value;
     }
 
-    public void update(Value dependency) {
-        if(dependency.isDirty()){
-            throw new RuntimeException("Updating value with a dirty dependency: " + dependency.toString());
-        }
-        Object currentDependencyValue = dependencies.get(dependency);
-        if (currentDependencyValue == null || currentDependencyValue != dependency.getValue()) {
-            dependencies.put(dependency, dependency.getValue());
-            dirty = true;
-        }
-    }
-
     public int hashCode() {
         return calculator.hashCode();
     }
 
-    public String toString(){
-        return String.format("%s = %s (dirty=%s)", calculator, value, dirty);
+    @Override public boolean equals(Object object) {
+        if(object == this) return true;
+        if(object == null) return false;
+        if(this.getClass() != object.getClass()) return false;
+        Value other = (Value) object;
+
+        return this.calculator.equals(other.calculator);
     }
 
-    private M calculateValue(Map<Value,Object> dependencies){
-        return calculator.calculate(dependencies);
+    public String toString(){
+        return String.format("Value %s = %s (dirty=%s)", calculator, value, dirty);
     }
 }

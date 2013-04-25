@@ -19,47 +19,33 @@
 package org.objectstream.instrumentation;
 
 
+import org.objectstream.context.CallContext;
 import org.objectstream.spi.ObjectStreamProvider;
-import org.objectstream.transaction.DependencyContext;
-import org.objectstream.value.MethodValue;
+import org.objectstream.value.MethodEvaluator;
 import org.objectstream.value.Value;
 
 import java.lang.reflect.Method;
 
-public class ObjectInterceptor<T> implements MethodInterceptor {
+public class ValueHandler<T> implements MethodHandler {
     private final ObjectStreamProvider streamProvider;
-    private final T realObj;
     private final ProxyFactory proxyFactory;
+    private final CallContext context;
 
-    public ObjectInterceptor(T realObj, ObjectStreamProvider stream, ProxyFactory proxyFactory) {
-        this.realObj = realObj;
+    public ValueHandler(ObjectStreamProvider stream, ProxyFactory proxyFactory, CallContext context) {
         this.streamProvider = stream;
         this.proxyFactory = proxyFactory;
+        this.context = context;
     }
 
-    public Object intercept(Object o, Method method, Object[] objects) {
-
-        Object res = null;
+    public Object handle(Object object, Method method, Object[] objects) {
         if (method.getReturnType() != Void.TYPE) {
-            Value value = streamProvider.value(new MethodValue(realObj, method, objects, proxyFactory));
-            DependencyContext.push(value);
-
-            res = value.getValue();
-
-            DependencyContext.pop();
-            if (!DependencyContext.empty()) {
-                streamProvider.bind(DependencyContext.top(), value);
-            }
+            Value value = streamProvider.value(new MethodEvaluator(object, method, objects, proxyFactory));
+            //Do not forget to pop the value in command.
+            context.getValueStack().push(value);
         } else {
-            try {
-                res = method.invoke(realObj, objects);
-            } catch (RuntimeException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+            throw new RuntimeException("Cannot get value from a void method");
         }
 
-        return res;
+        return null;
     }
 }

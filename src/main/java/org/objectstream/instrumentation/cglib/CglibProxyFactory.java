@@ -19,12 +19,12 @@
 package org.objectstream.instrumentation.cglib;
 
 import org.objectstream.instrumentation.AbstractProxyFactory;
-import org.objectstream.instrumentation.MethodInterceptor;
+import org.objectstream.instrumentation.MethodHandler;
 import org.objectstream.instrumentation.ProxyProvider;
 
 public class CglibProxyFactory extends AbstractProxyFactory {
     @Override
-    protected <T> ProxyProvider<T> getProxyFactory(MethodInterceptor interceptor) {
+    protected <T> ProxyProvider<T> getProxyFactory(MethodHandler interceptor) {
         return new CglibProxy<T>(interceptor);
     }
 }

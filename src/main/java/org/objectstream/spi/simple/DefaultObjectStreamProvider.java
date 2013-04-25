@@ -19,10 +19,9 @@
 package org.objectstream.spi.simple;
 
 
-import org.objectstream.instrumentation.ProxyFactory;
 import org.objectstream.spi.ObjectStreamProvider;
+import org.objectstream.value.Evaluator;
 import org.objectstream.value.Value;
-import org.objectstream.value.ValueCalculator;
 import org.objectstream.value.ValueObserver;
 
 import java.util.HashMap;
@@ -31,12 +30,12 @@ import java.util.Map;
 import java.util.Set;
 
 public class DefaultObjectStreamProvider implements ObjectStreamProvider {
-    private final Map<ValueCalculator, Value> nodes = new HashMap<>();
-    private final Map<Value, Set<ValueObserver>> nodeListeners = new HashMap<>();
-    private final Map<Value,Set<Value>> nodeParents = new HashMap<>();
-    private final Map<Value,Set<Value>> nodeChildren = new HashMap<>();
+    private final Set<Value> nodes = new HashSet<>();
+    private final Map<Evaluator, Value> nodeMap = new HashMap<>();
+    private final Map<Value, Set<ValueObserver>> nodeObservers = new HashMap<>();
 
-    private ProxyFactory proxyFactory;
+    private final Map<Value, Set<Value>> nodeParents = new HashMap<>();
+    private final Map<Value, Set<Value>> nodeChildren = new HashMap<>();
 
 /*
 Class<?> cl = Class.forName("javax.swing.JLabel");
@@ -47,21 +46,22 @@ Object o = cons.newInstance("JLabel");
 
     @Override
     public <M> void observe(Value<M> value, ValueObserver<M> observer) {
-        if(!nodeListeners.containsKey(value)){
-            Set<ValueObserver> listeners = new HashSet<>();
-            nodeListeners.put(value, listeners);
+        Set<ValueObserver> observers = nodeObservers.get(value);
+        if (observers == null) {
+            observers = new HashSet<>();
+            nodeObservers.put(value, observers);
         }
-
-        Set<ValueObserver> listeners = nodeListeners.get(value);
-        listeners.add(observer);
+        observers.add(observer);
+        observer.notify(value);
     }
 
     @Override
-    public Value value(ValueCalculator calculator) {
-        Value value = nodes.get(calculator);
-        if(value == null){
+    public Value value(Evaluator calculator) {
+        Value value = nodeMap.get(calculator);
+        if (value == null) {
             value = new Value(calculator);
-            nodes.put(calculator, value);
+            nodes.add(value);
+            nodeMap.put(calculator, value);
         }
 
         return value;
@@ -69,16 +69,19 @@ Object o = cons.newInstance("JLabel");
 
     @Override
     public void bind(Value parent, Value child) {
+        verify(parent);
+        verify(child);
+
         Set<Value> children = nodeChildren.get(parent);
-        if(children == null){
+        if (children == null) {
             children = new HashSet<>();
-            nodeChildren.put(parent,children);
+            nodeChildren.put(parent, children);
         }
 
         children.add(child);
 
         Set<Value> parents = nodeParents.get(child);
-        if(parents == null){
+        if (parents == null) {
             parents = new HashSet<>();
             nodeParents.put(child, parents);
         }
@@ -86,7 +89,37 @@ Object o = cons.newInstance("JLabel");
         parents.add(parent);
     }
 
-    public void setProxyFactory(ProxyFactory proxyFactory) {
-        this.proxyFactory = proxyFactory;
+    @Override
+    public void notifyChange(Value value) {
+        Set<ValueObserver> observers = nodeObservers.get(value);
+        if(observers != null){
+            for(ValueObserver observer : observers){
+                observer.notify(value);
+            }
+        }
+    }
+
+    @Override
+    public void invalidate(Value value) {
+        verify(value);
+        Set<Value> values = new HashSet<>();
+        values.add(value);
+        invalidate(values);
+    }
+
+    private void invalidate(Set<Value> values){
+        if(values != null && !values.isEmpty()){
+            for(Value value : values){
+                value.setDirty(true);
+                notifyChange(value);
+                invalidate(nodeParents.get(value));
+            }
+        }
+    }
+
+    private void verify(Value value) {
+        if (!nodes.contains(value)) {
+            throw new RuntimeException(String.format("Unknown node:", value));
+        }
     }
 }

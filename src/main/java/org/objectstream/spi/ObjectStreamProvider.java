@@ -18,14 +18,18 @@
 
 package org.objectstream.spi;
 
+import org.objectstream.value.Evaluator;
 import org.objectstream.value.Value;
-import org.objectstream.value.ValueCalculator;
 import org.objectstream.value.ValueObserver;
 
 public interface ObjectStreamProvider {
-    Value value(ValueCalculator calculator);
+    Value value(Evaluator calculator);
 
     <M> void observe(Value<M> value, ValueObserver<M> observer);
 
     void bind(Value parent, Value child);
+
+    void invalidate(Value readPropertyValue);
+
+    void notifyChange(Value value);
 }

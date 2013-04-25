@@ -22,17 +22,16 @@ import org.objectstream.instrumentation.ProxyFactory;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Map;
 
 
-public class MethodValue<T> implements ValueCalculator<T> {
+public class MethodEvaluator<T> implements Evaluator<T> {
 
     private final Object object;
     private final Method method;
     private final Object[] parameters;
     private final ProxyFactory proxyFactory;
 
-    public MethodValue(Object object, Method method, Object[] parameters, ProxyFactory proxyFactory) {
+    public MethodEvaluator(Object object, Method method, Object[] parameters, ProxyFactory proxyFactory) {
         this.object = object;
         this.method = method;
         this.parameters = parameters;
@@ -40,7 +39,7 @@ public class MethodValue<T> implements ValueCalculator<T> {
     }
 
     @Override
-    public T calculate(Map<Value, Object> dependencies) {
+    public T eval() {
         proxyFactory.instrumentField(object);
 
         T result;
@@ -63,5 +62,20 @@ public class MethodValue<T> implements ValueCalculator<T> {
         hash = hash * 31 + method.hashCode();
         hash = hash * 13 + Arrays.hashCode(parameters);
         return hash;
+    }
+
+    @Override public boolean equals(Object object) {
+        if(object == this) return true;
+        if(object == null) return false;
+        if(this.getClass() != object.getClass()) return false;
+        MethodEvaluator other = (MethodEvaluator) object;
+
+        return this.object.equals(other.object) &&
+               this.method.equals(other.method) &&
+               Arrays.equals(this.parameters, other.parameters);
+    }
+
+    public String toString(){
+        return String.format("Method(%s,%s,%s)", object,method,parameters);
     }
 }

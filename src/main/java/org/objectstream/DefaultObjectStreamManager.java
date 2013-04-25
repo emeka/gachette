@@ -30,6 +30,7 @@ public class DefaultObjectStreamManager implements ObjectStreamManager {
         CglibProxyFactory pf = new CglibProxyFactory();
         pf.setStreamProvider(objectStreamProvider);
         objectStream.setProxyFactory(pf);
+        objectStream.setStreamProvider(objectStreamProvider);
         return objectStream;
     }
 }

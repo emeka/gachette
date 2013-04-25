@@ -16,27 +16,21 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.value;
+package org.objectstream.spi.simple;
 
-import java.util.Map;
+import org.junit.Before;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
 
-public class ConstantValue implements ValueCalculator<Object> {
-    private final Object value;
+//@RunWith(MockitoJUnitRunner.class)
+public class DefaultObjectStreamProviderTest {
 
-    public ConstantValue(Object value){
-        this.value = value;
+    private DefaultObjectStreamProvider provider;
+
+    //@Before
+    void setup(){
+        provider = new DefaultObjectStreamProvider();
     }
 
-    @Override
-    public Object calculate(Map<Value, Object> dependencies) {
-        return value;
-    }
 
-    public int hashCode() {
-        return value.hashCode();
-    }
-
-    public String toString(){
-        return String.format("ConstantValue(%s)", value);
-    }
 }

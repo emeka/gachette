@@ -18,10 +18,9 @@
 
 package org.objectstream.instrumentation.javassist;
 
-import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
-import org.objectstream.instrumentation.MethodInterceptor;
+import org.objectstream.instrumentation.MethodHandler;
 import org.objectstream.instrumentation.ObjectStreamProxy;
 import org.objectstream.instrumentation.ProxyProvider;
 
@@ -29,10 +28,10 @@ import java.lang.reflect.Method;
 
 public class JavassistProxy<T> implements ProxyProvider<T> {
 
-    MethodInterceptor interceptor;
+    MethodHandler methodHandler;
 
-    public JavassistProxy(MethodInterceptor interceptor) {
-        this.interceptor = interceptor;
+    public JavassistProxy(MethodHandler methodHandler) {
+        this.methodHandler = methodHandler;
     }
 
     public T create(T obj) {
@@ -48,21 +47,21 @@ public class JavassistProxy<T> implements ProxyProvider<T> {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        ((ProxyObject) wObjPK).setHandler(new ListenerInterceptor(interceptor));
+        ((ProxyObject) wObjPK).setHandler(new ListenerInterceptor(methodHandler));
         return (T) wObjPK;
     }
 
-    private class ListenerInterceptor<T, M> implements MethodHandler {
-        private MethodInterceptor interceptor;
+    private class ListenerInterceptor<T, M> implements javassist.util.proxy.MethodHandler {
+        private MethodHandler interceptor;
 
-        public ListenerInterceptor(MethodInterceptor interceptor) {
+        public ListenerInterceptor(MethodHandler interceptor) {
             this.interceptor = interceptor;
         }
 
         public Object invoke(Object o, Method method, Method proceed, Object[] arguments) {
             Object res = null;
             try {
-                res = interceptor.intercept(o, method, arguments);
+                res = interceptor.handle(o, method, arguments);
             } catch (RuntimeException e) {
                 throw e;
             } catch (Exception e) {

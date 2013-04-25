@@ -19,6 +19,8 @@
 package org.objectstream;
 
 import org.objectstream.api.FluentObserveValue;
+import org.objectstream.context.CallContext;
+import org.objectstream.context.ThreadLocalCallContext;
 import org.objectstream.instrumentation.ProxyFactory;
 import org.objectstream.spi.ObjectStreamProvider;
 
@@ -34,8 +36,10 @@ public class DefaultObjectStream implements ObjectStream {
 
     @Override
     public FluentObserveValue observe() {
-        //Set CallContext to observe
-        return new FluentObserveValue(streamProvider);
+        CallContext context = new ThreadLocalCallContext();
+        //Do not forget to pop the value in the in the next part of the fluent call.
+        //context.getMethodHandlerStack().push(new ValueHandler<>(streamProvider, proxyFactory, context));
+        return new FluentObserveValue(streamProvider, context);
     }
     
     public void setProxyFactory(ProxyFactory proxyFactory) {

@@ -16,12 +16,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.transaction;
+package org.objectstream.value;
 
-
-import org.objectstream.value.Value;
-
-public interface ValueContainer<T> {
-    void setValue(Value<T> value);
-    Value<T> getValue();
+public interface Evaluator<T> {
+    public T eval();
 }

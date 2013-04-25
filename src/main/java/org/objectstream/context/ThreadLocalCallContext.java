@@ -16,28 +16,45 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.transaction;
+package org.objectstream.context;
+
+
+import org.objectstream.instrumentation.MethodHandler;
 import org.objectstream.value.Value;
 
+import java.util.Stack;
 
-public class ThreadSafeValueContainer<T> implements ValueContainer<T> {
+public class ThreadLocalCallContext implements CallContext {
 
-    private static ThreadLocal<ValueContainer> valueContainer = new ThreadLocal<>();
-
-    static ValueContainer threadSafeValueContainer() {
-        if (valueContainer.get() == null) {
-            valueContainer.set(new ValueContainerImpl());
+    public static final ThreadLocal<CallContext> threadLocalCallContext = new ThreadLocal<CallContext>() {
+        @Override
+        protected CallContext initialValue() {
+            return new DefaultCallContext(){};
         }
-        return valueContainer.get();
+    };
+
+    @Override
+    public Value getLastValue() {
+        return threadLocalCallContext.get().getLastValue();
     }
 
     @Override
-    public void setValue(Value<T> value) {
-        threadSafeValueContainer().setValue(value);
+    public void setLastValue(Value value) {
+        threadLocalCallContext.get().setLastValue(value);
     }
 
     @Override
-    public Value<T> getValue() {
-        return threadSafeValueContainer().getValue();
+    public Stack<MethodHandler> getMethodHandlerStack() {
+        return threadLocalCallContext.get().getMethodHandlerStack();
+    }
+
+    @Override
+    public Stack<Value> getValueStack() {
+        return threadLocalCallContext.get().getValueStack();
+    }
+
+    @Override
+    public void reset() {
+        threadLocalCallContext.get().reset();
     }
 }

@@ -16,31 +16,17 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.instrumentation;
+package org.objectstream.context;
 
+import org.objectstream.instrumentation.MethodHandler;
+import org.objectstream.value.Value;
 
-import org.objectstream.spi.ObjectStreamProvider;
-import org.objectstream.value.MethodValue;
+import java.util.Stack;
 
-import java.lang.reflect.Method;
-
-public class ValueInterceptor<T> implements MethodInterceptor {
-    private final ObjectStreamProvider streamProvider;
-    private final T realObj;
-    private final ProxyFactory proxyFactory;
-
-    public ValueInterceptor(T realObj, ObjectStreamProvider stream, ProxyFactory proxyFactory) {
-        this.realObj = realObj;
-        this.streamProvider = stream;
-        this.proxyFactory = proxyFactory;
-    }
-
-    public Object intercept(Object o, Method method, Object[] objects) {
-        if (method.getReturnType() == Void.TYPE) {
-            throw new RuntimeException(String.format("Trying to get a value from a void method: '%s' on %s.", method, o));
-        }
-
-
-        return streamProvider.value(new MethodValue(realObj, method, objects, proxyFactory));
-    }
+public interface CallContext {
+    void setLastValue(Value value);
+    Value getLastValue();
+    Stack<MethodHandler> getMethodHandlerStack();
+    Stack<Value> getValueStack();
+    void reset();
 }

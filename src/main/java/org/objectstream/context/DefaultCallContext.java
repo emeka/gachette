@@ -16,38 +16,42 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.transaction;
+package org.objectstream.context;
 
-
+import org.objectstream.instrumentation.MethodHandler;
 import org.objectstream.value.Value;
 
 import java.util.Stack;
 
-public class DependencyContext {
-    public static final ThreadLocal<Stack<Value>> callStack= new ThreadLocal<Stack<Value>>(){
-        @Override
-        protected Stack<Value> initialValue(){
-            return new Stack<>();
-        }
-    };
+public abstract class DefaultCallContext implements CallContext {
+    private final Stack<MethodHandler> methodHandlerStack = new Stack<>();
+    private Value lastValue;
+    private final Stack<Value> valueStack = new Stack<>();
 
-    public static boolean empty(){
-        return callStack.get().empty();
+    @Override
+    public void reset() {
+        methodHandlerStack.clear();
+        valueStack.clear();
+        lastValue = null;
     }
 
-    public static void push(Value value){
-        callStack.get().push(value);
+    @Override
+    public void setLastValue(Value lastValue) {
+        this.lastValue = lastValue;
     }
 
-    public static Value top(){
-        return callStack.get().peek();
+    @Override
+    public Value getLastValue() {
+        return lastValue;
     }
 
-    public static Value pop(){
-        return callStack.get().pop();
+    @Override
+    public Stack<MethodHandler> getMethodHandlerStack() {
+        return methodHandlerStack;
     }
 
-    public static void clear(){
-        callStack.get().clear();
+    @Override
+    public Stack<Value> getValueStack() {
+        return valueStack;
     }
 }

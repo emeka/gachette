@@ -22,13 +22,13 @@ package org.objectstream.instrumentation.javassist;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.objectstream.instrumentation.AbstractProxyProviderTest;
-import org.objectstream.instrumentation.MethodInterceptor;
+import org.objectstream.instrumentation.MethodHandler;
 import org.objectstream.instrumentation.ProxyProvider;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JavassistProxyTest extends AbstractProxyProviderTest {
     @Override
-    protected <T> ProxyProvider<T> getProxyFactory(MethodInterceptor interceptor) {
+    protected <T> ProxyProvider<T> getProxyFactory(MethodHandler interceptor) {
         return new JavassistProxy(interceptor);
     }
 }

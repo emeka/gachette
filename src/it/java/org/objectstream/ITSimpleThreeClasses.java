@@ -22,14 +22,13 @@ package org.objectstream;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.objectstream.model.A;
+import org.objectstream.model.B;
 import org.objectstream.model.C;
 import org.objectstream.value.Value;
 import org.objectstream.value.ValueObserver;
-import org.objectstream.model.A;
-import org.objectstream.model.B;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
 
 public class ITSimpleThreeClasses {
 
@@ -106,6 +105,7 @@ public class ITSimpleThreeClasses {
         assertEquals(2, c.getValue());
     }
 
+    @Test
     public void testSimpleWithListener() {
         c.setValue(1);
         b.setValue(10);
@@ -113,22 +113,24 @@ public class ITSimpleThreeClasses {
         a.setValue(100);
         a.setB(b);
 
-        UpdateListener listener = new UpdateListener();
+        TestObserver<Long> listener = new TestObserver<>();
 
+        a.getResult();
         stream.observe().value(a.getResult()).with(listener);
-        stream.object(c).setValue(2);
-        assertEquals(112, listener.getResult());
+        assertEquals(111, listener.getResult().longValue());
+        c.setValue(2);
+        assertEquals(112, listener.getResult().longValue());
     }
 
-    public class UpdateListener<T> implements ValueObserver<T> {
+    public class TestObserver<T> implements ValueObserver<T> {
         private T result;
 
         private T getResult() {
             return result;
         }
 
-        public void update(T result) {
-            this.result = result;
+        public void notify(Value<T> value) {
+            this.result = value.eval();
         }
     }
 }
