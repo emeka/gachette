@@ -29,7 +29,5 @@ public interface ObjectStreamProvider {
 
     void bind(Value parent, Value child);
 
-    void update(Value value);
-
     void invalidate(Value readPropertyValue);
 }

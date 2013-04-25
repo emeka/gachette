@@ -22,7 +22,6 @@ import org.objectstream.api.FluentObserveValue;
 import org.objectstream.context.CallContext;
 import org.objectstream.context.ThreadLocalCallContext;
 import org.objectstream.instrumentation.ProxyFactory;
-import org.objectstream.instrumentation.ValueHandler;
 import org.objectstream.spi.ObjectStreamProvider;
 
 public class DefaultObjectStream implements ObjectStream {

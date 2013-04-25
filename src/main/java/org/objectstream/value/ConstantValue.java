@@ -18,8 +18,6 @@
 
 package org.objectstream.value;
 
-import java.util.Map;
-
 public class ConstantValue implements ValueCalculator<Object> {
     private final Object value;
 
@@ -28,7 +26,7 @@ public class ConstantValue implements ValueCalculator<Object> {
     }
 
     @Override
-    public Object calculate(Map<Value, Object> dependencies) {
+    public Object calculate() {
         return value;
     }
 

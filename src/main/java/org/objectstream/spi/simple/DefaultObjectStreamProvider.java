@@ -87,8 +87,6 @@ Object o = cons.newInstance("JLabel");
         }
 
         parents.add(parent);
-
-        parent.update(child);
     }
 
     @Override
@@ -113,11 +111,4 @@ Object o = cons.newInstance("JLabel");
             throw new RuntimeException(String.format("Unknown node:", value));
         }
     }
-
-    @Override
-    public void update(Value value) {
-
-    }
-
-
 }

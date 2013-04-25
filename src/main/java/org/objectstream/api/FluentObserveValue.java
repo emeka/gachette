@@ -19,7 +19,6 @@
 package org.objectstream.api;
 
 import org.objectstream.context.CallContext;
-import org.objectstream.instrumentation.ValueHandler;
 import org.objectstream.spi.ObjectStreamProvider;
 import org.objectstream.value.Value;
 

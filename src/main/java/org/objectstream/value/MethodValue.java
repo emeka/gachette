@@ -22,7 +22,6 @@ import org.objectstream.instrumentation.ProxyFactory;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Map;
 
 
 public class MethodValue<T> implements ValueCalculator<T> {
@@ -40,7 +39,7 @@ public class MethodValue<T> implements ValueCalculator<T> {
     }
 
     @Override
-    public T calculate(Map<Value, Object> dependencies) {
+    public T calculate() {
         proxyFactory.instrumentField(object);
 
         T result;
