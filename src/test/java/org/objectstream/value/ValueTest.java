@@ -34,21 +34,21 @@ import static org.mockito.Mockito.when;
 public class ValueTest {
 
     @Mock
-    ValueCalculator calculator;
+    Evaluator calculator;
 
     Value value;
 
 
     @Before
     public void setup() {
-        when(calculator.calculate()).thenReturn(100);
+        when(calculator.eval()).thenReturn(100);
     }
 
     @Test
     public void testCreation() {
         value = new Value(calculator);
         assertTrue(value.isDirty());
-        assertEquals(100, value.getValue());
+        assertEquals(100, value.eval());
         assertFalse(value.isDirty());
     }
 }

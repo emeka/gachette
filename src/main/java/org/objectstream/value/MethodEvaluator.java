@@ -24,14 +24,14 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 
-public class MethodValue<T> implements ValueCalculator<T> {
+public class MethodEvaluator<T> implements Evaluator<T> {
 
     private final Object object;
     private final Method method;
     private final Object[] parameters;
     private final ProxyFactory proxyFactory;
 
-    public MethodValue(Object object, Method method, Object[] parameters, ProxyFactory proxyFactory) {
+    public MethodEvaluator(Object object, Method method, Object[] parameters, ProxyFactory proxyFactory) {
         this.object = object;
         this.method = method;
         this.parameters = parameters;
@@ -39,7 +39,7 @@ public class MethodValue<T> implements ValueCalculator<T> {
     }
 
     @Override
-    public T calculate() {
+    public T eval() {
         proxyFactory.instrumentField(object);
 
         T result;
@@ -68,7 +68,7 @@ public class MethodValue<T> implements ValueCalculator<T> {
         if(object == this) return true;
         if(object == null) return false;
         if(this.getClass() != object.getClass()) return false;
-        MethodValue other = (MethodValue) object;
+        MethodEvaluator other = (MethodEvaluator) object;
 
         return this.object.equals(other.object) &&
                this.method.equals(other.method) &&
@@ -76,6 +76,6 @@ public class MethodValue<T> implements ValueCalculator<T> {
     }
 
     public String toString(){
-        return String.format("MethodValue(%s,%s,%s)", object,method,parameters);
+        return String.format("Method(%s,%s,%s)", object,method,parameters);
     }
 }

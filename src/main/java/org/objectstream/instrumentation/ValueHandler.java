@@ -21,7 +21,7 @@ package org.objectstream.instrumentation;
 
 import org.objectstream.context.CallContext;
 import org.objectstream.spi.ObjectStreamProvider;
-import org.objectstream.value.MethodValue;
+import org.objectstream.value.MethodEvaluator;
 import org.objectstream.value.Value;
 
 import java.lang.reflect.Method;
@@ -39,7 +39,7 @@ public class ValueHandler<T> implements MethodHandler {
 
     public Object handle(Object object, Method method, Object[] objects) {
         if (method.getReturnType() != Void.TYPE) {
-            Value value = streamProvider.value(new MethodValue(object, method, objects, proxyFactory));
+            Value value = streamProvider.value(new MethodEvaluator(object, method, objects, proxyFactory));
             //Do not forget to pop the value in command.
             context.getValueStack().push(value);
         } else {

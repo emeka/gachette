@@ -18,6 +18,6 @@
 
 package org.objectstream.value;
 
-public interface ValueCalculator<T> {
-    public T calculate();
+public interface Evaluator<T> {
+    public T eval();
 }

@@ -18,15 +18,15 @@
 
 package org.objectstream.value;
 
-public class ConstantValue implements ValueCalculator<Object> {
+public class ConstantEvaluator implements Evaluator<Object> {
     private final Object value;
 
-    public ConstantValue(Object value){
+    public ConstantEvaluator(Object value){
         this.value = value;
     }
 
     @Override
-    public Object calculate() {
+    public Object eval() {
         return value;
     }
 
@@ -38,12 +38,12 @@ public class ConstantValue implements ValueCalculator<Object> {
         if(object == this) return true;
         if(object == null) return false;
         if(this.getClass() != object.getClass()) return false;
-        ConstantValue other = (ConstantValue) object;
+        ConstantEvaluator other = (ConstantEvaluator) object;
 
         return this.value.equals(other.value);
     }
 
     public String toString(){
-        return String.format("ConstantValue(%s)", value);
+        return String.format("Constant(%s)", value);
     }
 }

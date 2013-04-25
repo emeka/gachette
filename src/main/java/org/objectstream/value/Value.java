@@ -21,19 +21,19 @@ package org.objectstream.value;
 
 public class Value<M> {
 
-    private final ValueCalculator<M> calculator;
+    private final Evaluator<M> calculator;
 
     private M value;
     private boolean dirty = true;
 
-    public Value(ValueCalculator calculator) {
+    public Value(Evaluator calculator) {
         this(calculator, false);
     }
 
-    public Value(ValueCalculator calculator, boolean calculate){
+    public Value(Evaluator calculator, boolean evaluate){
         this.calculator = calculator;
-        if(calculate){
-            getValue();
+        if(evaluate){
+            eval();
         }
     }
 
@@ -45,9 +45,13 @@ public class Value<M> {
         this.dirty = dirty;
     }
 
-    public M getValue() {
+    public M getValue(){
+        return value;
+    }
+
+    public M eval() {
         if(dirty){
-            value = calculator.calculate();
+            value = calculator.eval();
             dirty = false;
         }
 

@@ -21,7 +21,7 @@ package org.objectstream.instrumentation;
 
 import org.objectstream.context.CallContext;
 import org.objectstream.spi.ObjectStreamProvider;
-import org.objectstream.value.MethodValue;
+import org.objectstream.value.MethodEvaluator;
 import org.objectstream.value.Value;
 
 import java.beans.Introspector;
@@ -43,16 +43,22 @@ public class EvalHandler<T> implements MethodHandler {
 
         Object res = null;
         if (method.getReturnType() != Void.TYPE) {
-            Value value = streamProvider.value(new MethodValue(object, method, objects, proxyFactory));
+            Value value = streamProvider.value(new MethodEvaluator(object, method, objects, proxyFactory));
             context.getValueStack().push(value);
             context.setLastValue(value);
 
-            res = value.getValue(); //this call must be between the push and the pop
+            Object oldValue = value.getValue();
+            res = value.eval(); //this call must be between the push and the pop
 
             context.getValueStack().pop();
             if (!context.getValueStack().empty()) {
                 streamProvider.bind(context.getValueStack().peek(), value);
             }
+
+            if(!res.equals(oldValue)){
+                streamProvider.notifyChange(value);
+            }
+
         } else {
             try {
                 res = method.invoke(object, objects);
@@ -81,7 +87,7 @@ public class EvalHandler<T> implements MethodHandler {
                     if (write != null && write.equals(method)) {
                         Method read = propertyDescriptor.getReadMethod();
                         if (read != null) {
-                            result = streamProvider.value(new MethodValue(object, read, new Object[]{}, proxyFactory));
+                            result = streamProvider.value(new MethodEvaluator(object, read, new Object[]{}, proxyFactory));
                         }
                     }
                 }

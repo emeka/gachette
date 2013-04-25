@@ -20,8 +20,8 @@ package org.objectstream.spi.simple;
 
 
 import org.objectstream.spi.ObjectStreamProvider;
+import org.objectstream.value.Evaluator;
 import org.objectstream.value.Value;
-import org.objectstream.value.ValueCalculator;
 import org.objectstream.value.ValueObserver;
 
 import java.util.HashMap;
@@ -31,8 +31,8 @@ import java.util.Set;
 
 public class DefaultObjectStreamProvider implements ObjectStreamProvider {
     private final Set<Value> nodes = new HashSet<>();
-    private final Map<ValueCalculator, Value> nodeMap = new HashMap<>();
-    private final Map<Value, Set<ValueObserver>> nodeListeners = new HashMap<>();
+    private final Map<Evaluator, Value> nodeMap = new HashMap<>();
+    private final Map<Value, Set<ValueObserver>> nodeObservers = new HashMap<>();
 
     private final Map<Value, Set<Value>> nodeParents = new HashMap<>();
     private final Map<Value, Set<Value>> nodeChildren = new HashMap<>();
@@ -46,17 +46,17 @@ Object o = cons.newInstance("JLabel");
 
     @Override
     public <M> void observe(Value<M> value, ValueObserver<M> observer) {
-        if (!nodeListeners.containsKey(value)) {
-            Set<ValueObserver> listeners = new HashSet<>();
-            nodeListeners.put(value, listeners);
+        Set<ValueObserver> observers = nodeObservers.get(value);
+        if (observers == null) {
+            observers = new HashSet<>();
+            nodeObservers.put(value, observers);
         }
-
-        Set<ValueObserver> listeners = nodeListeners.get(value);
-        listeners.add(observer);
+        observers.add(observer);
+        observer.notify(value);
     }
 
     @Override
-    public Value value(ValueCalculator calculator) {
+    public Value value(Evaluator calculator) {
         Value value = nodeMap.get(calculator);
         if (value == null) {
             value = new Value(calculator);
@@ -90,6 +90,16 @@ Object o = cons.newInstance("JLabel");
     }
 
     @Override
+    public void notifyChange(Value value) {
+        Set<ValueObserver> observers = nodeObservers.get(value);
+        if(observers != null){
+            for(ValueObserver observer : observers){
+                observer.notify(value);
+            }
+        }
+    }
+
+    @Override
     public void invalidate(Value value) {
         verify(value);
         Set<Value> values = new HashSet<>();
@@ -101,6 +111,7 @@ Object o = cons.newInstance("JLabel");
         if(values != null && !values.isEmpty()){
             for(Value value : values){
                 value.setDirty(true);
+                notifyChange(value);
                 invalidate(nodeParents.get(value));
             }
         }
