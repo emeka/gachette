@@ -104,7 +104,6 @@ public class ITSimpleThreeClasses {
         assertEquals(2, c.getValue());
     }
 
-    @Test
     public void testSimpleWithListener() {
         c.setValue(1);
         b.setValue(10);
@@ -116,6 +115,7 @@ public class ITSimpleThreeClasses {
 
         a.getResult();
         stream.observe().value(a.getResult()).with(listener);
+        assertEquals(111, listener.getResult());
         c.setValue(2);
         assertEquals(112, listener.getResult());
     }

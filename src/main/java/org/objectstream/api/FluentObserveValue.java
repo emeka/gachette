@@ -37,16 +37,13 @@ public class FluentObserveValue {
     }
 
     public FluentObserveWith value(Object methodCall) {
-        if(! (context.getMethodHandlerStack().peek() instanceof ValueHandler)){
-            throw new RuntimeException("Context error: method handler should be a ValueHandler. " + ERROR_BLURB );
-        }
+        Value value = context.getLastValue();
 
-        if(context.getValueStack().empty()){
+        if(value == null){
             throw new RuntimeException("Context error: value not found. " + ERROR_BLURB);
         }
-        Value value = context.getValueStack().pop();
 
-        //We have what we are looking for, so we can clean the context.
+        //We have what we are looking for, so we can reset the context.
         context.reset();
 
         return new FluentObserveWith(streamProvider, value);

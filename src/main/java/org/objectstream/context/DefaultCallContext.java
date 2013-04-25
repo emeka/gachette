@@ -25,12 +25,24 @@ import java.util.Stack;
 
 public abstract class DefaultCallContext implements CallContext {
     private final Stack<MethodHandler> methodHandlerStack = new Stack<>();
+    private Value lastValue;
     private final Stack<Value> valueStack = new Stack<>();
 
     @Override
     public void reset() {
-        methodHandlerStack.clear();;
+        methodHandlerStack.clear();
         valueStack.clear();
+        lastValue = null;
+    }
+
+    @Override
+    public void setLastValue(Value lastValue) {
+        this.lastValue = lastValue;
+    }
+
+    @Override
+    public Value getLastValue() {
+        return lastValue;
     }
 
     @Override
@@ -42,10 +54,4 @@ public abstract class DefaultCallContext implements CallContext {
     public Stack<Value> getValueStack() {
         return valueStack;
     }
-
-    /**
-     * Just to prevent instantiation.
-     * @return
-     */
-    public abstract boolean threadSafe();
 }

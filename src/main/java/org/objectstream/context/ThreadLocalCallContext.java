@@ -29,14 +29,19 @@ public class ThreadLocalCallContext implements CallContext {
     public static final ThreadLocal<CallContext> threadLocalCallContext = new ThreadLocal<CallContext>() {
         @Override
         protected CallContext initialValue() {
-            return new DefaultCallContext(){
-                @Override
-                public boolean threadSafe() {
-                    return true;
-                }
-            };
+            return new DefaultCallContext(){};
         }
     };
+
+    @Override
+    public Value getLastValue() {
+        return threadLocalCallContext.get().getLastValue();
+    }
+
+    @Override
+    public void setLastValue(Value value) {
+        threadLocalCallContext.get().setLastValue(value);
+    }
 
     @Override
     public Stack<MethodHandler> getMethodHandlerStack() {

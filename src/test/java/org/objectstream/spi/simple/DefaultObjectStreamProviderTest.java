@@ -16,20 +16,21 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.spi;
+package org.objectstream.spi.simple;
 
-import org.objectstream.value.Value;
-import org.objectstream.value.ValueCalculator;
-import org.objectstream.value.ValueObserver;
+import org.junit.Before;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
 
-public interface ObjectStreamProvider {
-    Value value(ValueCalculator calculator);
+//@RunWith(MockitoJUnitRunner.class)
+public class DefaultObjectStreamProviderTest {
 
-    <M> void observe(Value<M> value, ValueObserver<M> observer);
+    private DefaultObjectStreamProvider provider;
 
-    void bind(Value parent, Value child);
+    //@Before
+    void setup(){
+        provider = new DefaultObjectStreamProvider();
+    }
 
-    void update(Value value);
 
-    void invalidate(Value readPropertyValue);
 }

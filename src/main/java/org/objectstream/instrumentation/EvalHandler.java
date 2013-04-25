@@ -24,6 +24,8 @@ import org.objectstream.spi.ObjectStreamProvider;
 import org.objectstream.value.MethodValue;
 import org.objectstream.value.Value;
 
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 
 public class EvalHandler<T> implements MethodHandler {
@@ -43,6 +45,7 @@ public class EvalHandler<T> implements MethodHandler {
         if (method.getReturnType() != Void.TYPE) {
             Value value = streamProvider.value(new MethodValue(object, method, objects, proxyFactory));
             context.getValueStack().push(value);
+            context.setLastValue(value);
 
             res = value.getValue(); //this call must be between the push and the pop
 
@@ -53,6 +56,11 @@ public class EvalHandler<T> implements MethodHandler {
         } else {
             try {
                 res = method.invoke(object, objects);
+                //If it is writing a property with a primitive type, invalidate the corresponding get value.
+                Value readPropertyValue = findReadPropertyValue(object, method, objects);
+                if (readPropertyValue != null) {
+                    streamProvider.invalidate(readPropertyValue);
+                }
             } catch (RuntimeException e) {
                 throw e;
             } catch (Exception e) {
@@ -61,5 +69,28 @@ public class EvalHandler<T> implements MethodHandler {
         }
 
         return res;
+    }
+
+    private Value findReadPropertyValue(Object object, Method method, Object[] objects) {
+        Value result = null;
+        try {
+            for (PropertyDescriptor propertyDescriptor :
+                    Introspector.getBeanInfo(object.getClass(), Object.class).getPropertyDescriptors()) {
+                if (propertyDescriptor.getPropertyType().isPrimitive()) {
+                    Method write = propertyDescriptor.getWriteMethod();
+                    if (write != null && write.equals(method)) {
+                        Method read = propertyDescriptor.getReadMethod();
+                        if (read != null) {
+                            result = streamProvider.value(new MethodValue(object, read, new Object[]{}, proxyFactory));
+                        }
+                    }
+                }
+            }
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return result;
     }
 }

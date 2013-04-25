@@ -36,6 +36,15 @@ public class ConstantValue implements ValueCalculator<Object> {
         return value.hashCode();
     }
 
+    @Override public boolean equals(Object object) {
+        if(object == this) return true;
+        if(object == null) return false;
+        if(this.getClass() != object.getClass()) return false;
+        ConstantValue other = (ConstantValue) object;
+
+        return this.value.equals(other.value);
+    }
+
     public String toString(){
         return String.format("ConstantValue(%s)", value);
     }

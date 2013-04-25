@@ -39,7 +39,7 @@ public class DefaultObjectStream implements ObjectStream {
     public FluentObserveValue observe() {
         CallContext context = new ThreadLocalCallContext();
         //Do not forget to pop the value in the in the next part of the fluent call.
-        context.getMethodHandlerStack().push(new ValueHandler<>(streamProvider, proxyFactory, context));
+        //context.getMethodHandlerStack().push(new ValueHandler<>(streamProvider, proxyFactory, context));
         return new FluentObserveValue(streamProvider, context);
     }
     

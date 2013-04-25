@@ -19,6 +19,7 @@
 package org.objectstream.value;
 
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,6 +46,10 @@ public class Value<M> {
         return dirty;
     }
 
+    public void setDirty(boolean dirty) {
+        this.dirty = dirty;
+    }
+
     public M getValue() {
         if(dirty){
             value = calculateValue(dependencies);
@@ -69,8 +74,17 @@ public class Value<M> {
         return calculator.hashCode();
     }
 
+    @Override public boolean equals(Object object) {
+        if(object == this) return true;
+        if(object == null) return false;
+        if(this.getClass() != object.getClass()) return false;
+        Value other = (Value) object;
+
+        return this.calculator.equals(other.calculator);
+    }
+
     public String toString(){
-        return String.format("%s = %s (dirty=%s)", calculator, value, dirty);
+        return String.format("Value %s = %s (dirty=%s)", calculator, value, dirty);
     }
 
     private M calculateValue(Map<Value,Object> dependencies){

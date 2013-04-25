@@ -64,4 +64,19 @@ public class MethodValue<T> implements ValueCalculator<T> {
         hash = hash * 13 + Arrays.hashCode(parameters);
         return hash;
     }
+
+    @Override public boolean equals(Object object) {
+        if(object == this) return true;
+        if(object == null) return false;
+        if(this.getClass() != object.getClass()) return false;
+        MethodValue other = (MethodValue) object;
+
+        return this.object.equals(other.object) &&
+               this.method.equals(other.method) &&
+               Arrays.equals(this.parameters, other.parameters);
+    }
+
+    public String toString(){
+        return String.format("MethodValue(%s,%s,%s)", object,method,parameters);
+    }
 }
