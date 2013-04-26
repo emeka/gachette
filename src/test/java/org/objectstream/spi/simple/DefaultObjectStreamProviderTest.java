@@ -19,18 +19,102 @@
 package org.objectstream.spi.simple;
 
 import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.objectstream.value.Evaluator;
+import org.objectstream.value.Value;
+import org.objectstream.value.ValueObserver;
 
-//@RunWith(MockitoJUnitRunner.class)
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@RunWith(MockitoJUnitRunner.class)
 public class DefaultObjectStreamProviderTest {
 
-    private DefaultObjectStreamProvider provider;
+    private DefaultObjectStreamProvider streamProvider;
 
-    //@Before
-    void setup(){
-        provider = new DefaultObjectStreamProvider();
+    @Mock
+    Evaluator evaluator1, evaluator2;
+
+    @Mock
+    ValueObserver observer;
+
+    @Mock
+    Value unknownValue;
+
+    @Before
+    public void setup() {
+        streamProvider = new DefaultObjectStreamProvider();
+        when(evaluator1.eval()).thenReturn(null);
+        when(evaluator2.eval()).thenReturn(null);
     }
 
+    @Test
+    public void testValue() {
+        Value value1 = streamProvider.value(evaluator1);
 
+        //calling twice with the same evaluator should return the same value
+        assertEquals(value1, streamProvider.value(evaluator1));
+
+        Value value2 = streamProvider.value(evaluator2);
+        assertNotSame(value1, value2);
+    }
+
+    @Test
+    public void testObserveAndNotify() {
+        Value value1 = streamProvider.value(evaluator1);
+
+        streamProvider.observe(value1, observer); //should notify value1
+        streamProvider.observe(value1, observer); //should not notify value1 since observer already exists
+
+        streamProvider.notifyChange(value1); //should notify value1
+        streamProvider.notifyChange(value1); //should notify value1
+        verify(observer, times(3)).notify(value1);
+    }
+
+    @Test
+    public void testBind() {
+        Value value1 = streamProvider.value(evaluator1);
+        Value value2 = streamProvider.value(evaluator2);
+        streamProvider.bind(value1, value2);
+
+        streamProvider.observe(value1, observer); //should notify value1
+
+        streamProvider.notifyChange(value2);  //should not notify value1 as notification does not follow binds
+        verify(observer, times(1)).notify(value1);
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testBindUnknownValue(){
+        Value value1 = streamProvider.value(evaluator1);
+        streamProvider.bind(value1, unknownValue);
+    }
+
+    @Test
+    public void testInvalidation() {
+        Value value1 = streamProvider.value(evaluator1);
+        Value value2 = streamProvider.value(evaluator2);
+
+        streamProvider.bind(value1, value2);
+        streamProvider.observe(value1, observer); //should notify value1
+
+        value1.eval();
+        value2.eval();
+
+        assertFalse(value1.isDirty());
+        assertFalse(value2.isDirty());
+
+        streamProvider.invalidate(value2);  //should notify as invalidation follow binds and value changes trigger observers
+        verify(observer, times(2)).notify(value1);
+
+        assertTrue(value1.isDirty());
+        assertTrue(value2.isDirty());
+    }
 }

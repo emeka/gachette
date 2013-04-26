@@ -18,19 +18,17 @@
 
 package org.objectstream;
 
-import org.objectstream.instrumentation.cglib.CglibProxyFactory;
-import org.objectstream.spi.simple.DefaultObjectStreamProvider;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
 
-public class DefaultObjectStreamManager implements ObjectStreamManager {
-    @Override
-    public ObjectStream create(){
-        DefaultObjectStreamProvider objectStreamProvider = new DefaultObjectStreamProvider();
+import static org.junit.Assert.assertNotNull;
 
-        DefaultObjectStream objectStream = new DefaultObjectStream();
-        CglibProxyFactory pf = new CglibProxyFactory();
-        pf.setStreamProvider(objectStreamProvider);
-        objectStream.setProxyFactory(pf);
-        objectStream.setStreamProvider(objectStreamProvider);
-        return objectStream;
+@RunWith(MockitoJUnitRunner.class)
+public class DefaultObjectStreamFactoryTest {
+
+    @Test
+    public void test(){
+        assertNotNull((new DefaultObjectStreamFactory()).create());
     }
 }

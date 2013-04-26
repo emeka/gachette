@@ -16,36 +16,42 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.instrumentation;
+package org.objectstream.api;
 
-
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.objectstream.context.CallContext;
+import org.objectstream.instrumentation.MethodHandler;
 import org.objectstream.spi.ObjectStreamProvider;
-import org.objectstream.value.MethodEvaluator;
 import org.objectstream.value.Value;
 
-import java.lang.reflect.Method;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.when;
 
-public class ValueHandler<T> implements MethodHandler {
-    private final ObjectStreamProvider streamProvider;
-    private final ProxyFactory proxyFactory;
-    private final CallContext context;
+@RunWith(MockitoJUnitRunner.class)
+public class FluentObserveValueTest {
 
-    public ValueHandler(ObjectStreamProvider stream, ProxyFactory proxyFactory, CallContext context) {
-        this.streamProvider = stream;
-        this.proxyFactory = proxyFactory;
-        this.context = context;
+    @Mock
+    ObjectStreamProvider streamProvider;
+
+    @Mock
+    CallContext callContext;
+
+    @Mock
+    Value value;
+
+    @Test
+    public void testValue(){
+        when(callContext.getLastValue()).thenReturn(value);
+        assertTrue((new FluentObserveValue(streamProvider,callContext)).value(new Object()) instanceof FluentObserveWith);
     }
 
-    public Object handle(Object object, Method method, Object[] objects) {
-        if (method.getReturnType() != Void.TYPE) {
-            Value value = streamProvider.value(new MethodEvaluator(object, method, objects, proxyFactory));
-            //Do not forget to pop the value in command.
-            context.getValueStack().push(value);
-        } else {
-            throw new RuntimeException("Cannot get value from a void method");
-        }
-
-        return null;
+    @Test(expected = RuntimeException.class)
+    public void testException(){
+        when(callContext.getLastValue()).thenReturn(null);
+        assertTrue((new FluentObserveValue(streamProvider,callContext)).value(new Object()) instanceof FluentObserveWith);
     }
 }

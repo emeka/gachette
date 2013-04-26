@@ -18,15 +18,15 @@
 
 package org.objectstream.value;
 
-public class ConstantEvaluator implements Evaluator<Object> {
-    private final Object value;
+public class ConstantEvaluator<T> implements Evaluator<T> {
+    private final T value;
 
-    public ConstantEvaluator(Object value){
+    public ConstantEvaluator(T value){
         this.value = value;
     }
 
     @Override
-    public Object eval() {
+    public T eval() {
         return value;
     }
 

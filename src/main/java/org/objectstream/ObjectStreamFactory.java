@@ -18,6 +18,6 @@
 
 package org.objectstream;
 
-public interface ObjectStreamManager {
+public interface ObjectStreamFactory {
     ObjectStream create();
 }

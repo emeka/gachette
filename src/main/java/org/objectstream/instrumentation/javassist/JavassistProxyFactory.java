@@ -21,8 +21,13 @@ package org.objectstream.instrumentation.javassist;
 import org.objectstream.instrumentation.AbstractProxyFactory;
 import org.objectstream.instrumentation.MethodHandler;
 import org.objectstream.instrumentation.ProxyProvider;
+import org.objectstream.spi.ObjectStreamProvider;
 
 public class JavassistProxyFactory extends AbstractProxyFactory {
+    public JavassistProxyFactory(ObjectStreamProvider streamProvider) {
+        super(streamProvider);
+    }
+
     @Override
     protected <T> ProxyProvider<T> getProxyFactory(MethodHandler interceptor) {
         return new JavassistProxy<T>(interceptor);

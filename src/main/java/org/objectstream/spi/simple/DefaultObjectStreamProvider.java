@@ -51,8 +51,10 @@ Object o = cons.newInstance("JLabel");
             observers = new HashSet<>();
             nodeObservers.put(value, observers);
         }
-        observers.add(observer);
-        observer.notify(value);
+        if (!observers.contains(observer)) {
+            observers.add(observer);
+            observer.notify(value);
+        }
     }
 
     @Override
@@ -92,8 +94,8 @@ Object o = cons.newInstance("JLabel");
     @Override
     public void notifyChange(Value value) {
         Set<ValueObserver> observers = nodeObservers.get(value);
-        if(observers != null){
-            for(ValueObserver observer : observers){
+        if (observers != null) {
+            for (ValueObserver observer : observers) {
                 observer.notify(value);
             }
         }
@@ -107,10 +109,10 @@ Object o = cons.newInstance("JLabel");
         invalidate(values);
     }
 
-    private void invalidate(Set<Value> values){
-        if(values != null && !values.isEmpty()){
-            for(Value value : values){
-                value.setDirty(true);
+    private void invalidate(Set<Value> values) {
+        if (values != null && !values.isEmpty()) {
+            for (Value value : values) {
+                value.setDirty();
                 notifyChange(value);
                 invalidate(nodeParents.get(value));
             }

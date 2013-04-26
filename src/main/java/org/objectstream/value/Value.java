@@ -41,8 +41,8 @@ public class Value<M> {
         return dirty;
     }
 
-    public void setDirty(boolean dirty) {
-        this.dirty = dirty;
+    public void setDirty() {
+        this.dirty = true;
     }
 
     public M getValue(){

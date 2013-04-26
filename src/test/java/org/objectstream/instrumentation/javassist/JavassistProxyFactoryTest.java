@@ -16,20 +16,27 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.instrumentation.cglib;
+package org.objectstream.instrumentation.javassist;
 
-import org.objectstream.instrumentation.AbstractProxyFactory;
-import org.objectstream.instrumentation.MethodHandler;
-import org.objectstream.instrumentation.ProxyProvider;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.objectstream.instrumentation.ObjectStreamProxy;
+import org.objectstream.instrumentation.cglib.CglibProxy;
+import org.objectstream.instrumentation.cglib.CglibProxyFactory;
 import org.objectstream.spi.ObjectStreamProvider;
 
-public class CglibProxyFactory extends AbstractProxyFactory {
-    public CglibProxyFactory(ObjectStreamProvider streamProvider) {
-        super(streamProvider);
-    }
+import static org.junit.Assert.assertTrue;
 
-    @Override
-    protected <T> ProxyProvider<T> getProxyFactory(MethodHandler interceptor) {
-        return new CglibProxy<T>(interceptor);
+@RunWith(MockitoJUnitRunner.class)
+public class JavassistProxyFactoryTest {
+
+    @Mock
+    ObjectStreamProvider streamProvider;
+
+    @Test
+    public void test() {
+        assertTrue((new JavassistProxyFactory(streamProvider)).createObjectProxy(new Object()) instanceof ObjectStreamProxy);
     }
 }

@@ -16,20 +16,17 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.instrumentation.cglib;
+package org.objectstream;
 
-import org.objectstream.instrumentation.AbstractProxyFactory;
-import org.objectstream.instrumentation.MethodHandler;
-import org.objectstream.instrumentation.ProxyProvider;
-import org.objectstream.spi.ObjectStreamProvider;
+import org.objectstream.instrumentation.cglib.CglibProxyFactory;
+import org.objectstream.spi.simple.DefaultObjectStreamProvider;
 
-public class CglibProxyFactory extends AbstractProxyFactory {
-    public CglibProxyFactory(ObjectStreamProvider streamProvider) {
-        super(streamProvider);
-    }
-
+public class DefaultObjectStreamFactory implements ObjectStreamFactory {
     @Override
-    protected <T> ProxyProvider<T> getProxyFactory(MethodHandler interceptor) {
-        return new CglibProxy<T>(interceptor);
+    public ObjectStream create(){
+        DefaultObjectStreamProvider objectStreamProvider = new DefaultObjectStreamProvider();
+        CglibProxyFactory proxyFactory = new CglibProxyFactory(objectStreamProvider);
+        DefaultObjectStream objectStream = new DefaultObjectStream(objectStreamProvider,proxyFactory);
+        return objectStream;
     }
 }
