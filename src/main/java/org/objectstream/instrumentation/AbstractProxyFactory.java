@@ -24,7 +24,11 @@ import org.objectstream.context.ThreadLocalCallContext;
 import org.objectstream.spi.ObjectStreamProvider;
 
 public abstract class AbstractProxyFactory implements ProxyFactory {
-    private ObjectStreamProvider streamProvider;
+    private final ObjectStreamProvider streamProvider;
+
+    public AbstractProxyFactory(ObjectStreamProvider streamProvider) {
+        this.streamProvider = streamProvider;
+    }
 
     public <T> T instrumentField(T object){
         ObjectInstrumentor enhancer = new FieldInstrumentor(this);
@@ -38,10 +42,6 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
         CallContext context = new ThreadLocalCallContext();
         ProxyProvider<T> pf = getProxyFactory(new ContextualHandler<>(object, context,new EvalHandler<>(streamProvider, this, context)));
         return pf.create(object);
-    }
-
-    public void setStreamProvider(ObjectStreamProvider streamProvider) {
-        this.streamProvider = streamProvider;
     }
 
     protected abstract <T> ProxyProvider<T> getProxyFactory(MethodHandler interceptor);

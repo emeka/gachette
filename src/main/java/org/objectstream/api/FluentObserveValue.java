@@ -42,9 +42,6 @@ public class FluentObserveValue {
             throw new RuntimeException("Context error: value not found. " + ERROR_BLURB);
         }
 
-        //We have what we are looking for, so we can reset the context.
-        context.reset();
-
         return new FluentObserveWith(streamProvider, value);
     }
 }

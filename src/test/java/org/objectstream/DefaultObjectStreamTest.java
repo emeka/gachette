@@ -16,20 +16,42 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.instrumentation.cglib;
+package org.objectstream;
 
-import org.objectstream.instrumentation.AbstractProxyFactory;
-import org.objectstream.instrumentation.MethodHandler;
-import org.objectstream.instrumentation.ProxyProvider;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.objectstream.api.FluentObserveValue;
+import org.objectstream.instrumentation.ProxyFactory;
 import org.objectstream.spi.ObjectStreamProvider;
 
-public class CglibProxyFactory extends AbstractProxyFactory {
-    public CglibProxyFactory(ObjectStreamProvider streamProvider) {
-        super(streamProvider);
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.verify;
+
+@RunWith(MockitoJUnitRunner.class)
+public class DefaultObjectStreamTest {
+
+    DefaultObjectStream objectStream;
+
+    @Mock
+    ObjectStreamProvider streamProvider;
+
+    @Mock
+    ProxyFactory proxyFactory;
+
+    @Before
+    public void setup(){
+        objectStream = new DefaultObjectStream(streamProvider,proxyFactory);
     }
 
-    @Override
-    protected <T> ProxyProvider<T> getProxyFactory(MethodHandler interceptor) {
-        return new CglibProxy<T>(interceptor);
+    @Test
+    public void test(){
+        assertTrue(objectStream.observe() instanceof FluentObserveValue);
+        Object target = new Object();
+        objectStream.object(target);
+        verify(proxyFactory).createObjectProxy(target);
     }
+
 }

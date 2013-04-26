@@ -32,7 +32,7 @@ import static org.junit.Assert.assertEquals;
 
 public class ITSimpleThreeClasses {
 
-    private ObjectStreamManager manager;
+    private ObjectStreamFactory manager;
     private ObjectStream stream;
     private A a;
     private B b;
@@ -40,7 +40,7 @@ public class ITSimpleThreeClasses {
 
     @Before
     public void setup() {
-        manager = new DefaultObjectStreamManager();
+        manager = new DefaultObjectStreamFactory();
         stream = manager.create();
 
         a = stream.object(new A());

@@ -22,12 +22,19 @@ import org.objectstream.api.FluentObserveValue;
 import org.objectstream.context.CallContext;
 import org.objectstream.context.ThreadLocalCallContext;
 import org.objectstream.instrumentation.ProxyFactory;
+import org.objectstream.instrumentation.cglib.CglibProxyFactory;
 import org.objectstream.spi.ObjectStreamProvider;
+import org.objectstream.spi.simple.DefaultObjectStreamProvider;
 
 public class DefaultObjectStream implements ObjectStream {
+    private final ObjectStreamProvider streamProvider;
+    private final ProxyFactory proxyFactory;
 
-    private ProxyFactory proxyFactory;
-    private ObjectStreamProvider streamProvider;
+
+    public DefaultObjectStream(ObjectStreamProvider streamProvider, ProxyFactory proxyFactory) {
+        this.streamProvider = streamProvider;
+        this.proxyFactory = proxyFactory;
+    }
 
     @Override
     public <T> T object(T object) {
@@ -37,16 +44,6 @@ public class DefaultObjectStream implements ObjectStream {
     @Override
     public FluentObserveValue observe() {
         CallContext context = new ThreadLocalCallContext();
-        //Do not forget to pop the value in the in the next part of the fluent call.
-        //context.getMethodHandlerStack().push(new ValueHandler<>(streamProvider, proxyFactory, context));
         return new FluentObserveValue(streamProvider, context);
-    }
-    
-    public void setProxyFactory(ProxyFactory proxyFactory) {
-        this.proxyFactory = proxyFactory;
-    }
-    
-    public void setStreamProvider(ObjectStreamProvider streamProvider) {
-        this.streamProvider = streamProvider;
     }
 }

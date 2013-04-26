@@ -41,16 +41,10 @@ public class FieldInstrumentor implements ObjectInstrumentor {
                 Method write = propertyDescriptor.getWriteMethod();
                 if (!propertyDescriptor.getPropertyType().isPrimitive() && read != null && write != null) {
                     Object originalValue = null;
-                    try {
-                        originalValue = read.invoke(object);
-                        if (originalValue != null) {
-                            Object proxy = proxyFactory.createObjectProxy(originalValue);
-                            write.invoke(object, proxy);
-                        }
-                    } catch (RuntimeException e) {
-                        throw e;
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
+                    originalValue = read.invoke(object);
+                    if (originalValue != null) {
+                        Object proxy = proxyFactory.createObjectProxy(originalValue);
+                        write.invoke(object, proxy);
                     }
                 }
             }
