@@ -23,24 +23,25 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.objectstream.spi.ObjectStreamProvider;
 
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
-public class FieldInstrumentorTest {
+public class FieldEnhancerTest {
 
-    FieldInstrumentor instrumentor;
+    FieldEnhancer fieldEnhancer;
 
     @Mock
-    ProxyFactory proxyFactory;
+    ObjectStreamProvider objectStreamProvider;
 
     Object nonPrimitive = new Object();
     Object state = new Object();
 
     @Before
     public void setup(){
-        instrumentor = new FieldInstrumentor(proxyFactory);
+        fieldEnhancer = new FieldEnhancer(objectStreamProvider);
     }
 
     @Test
@@ -50,10 +51,10 @@ public class FieldInstrumentorTest {
         testObject.setNonPrimitive(nonPrimitive);
         testObject.modify(state);
 
-        instrumentor.enhance(testObject);
+        fieldEnhancer.enhance(testObject);
 
-        verify(proxyFactory).createObjectProxy(nonPrimitive);
-        verify(proxyFactory,never()).createObjectProxy(state);
+        verify(objectStreamProvider).createProxy(nonPrimitive);
+        verify(objectStreamProvider,never()).createProxy(state);
     }
 
     private static class TestClass {

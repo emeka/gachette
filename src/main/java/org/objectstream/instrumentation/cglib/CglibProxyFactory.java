@@ -21,13 +21,8 @@ package org.objectstream.instrumentation.cglib;
 import org.objectstream.instrumentation.AbstractProxyFactory;
 import org.objectstream.instrumentation.MethodHandler;
 import org.objectstream.instrumentation.ProxyProvider;
-import org.objectstream.spi.ObjectStreamProvider;
 
 public class CglibProxyFactory extends AbstractProxyFactory {
-    public CglibProxyFactory(ObjectStreamProvider streamProvider) {
-        super(streamProvider);
-    }
-
     @Override
     protected <T> ProxyProvider<T> getProxyFactory(MethodHandler interceptor) {
         return new CglibProxy<T>(interceptor);

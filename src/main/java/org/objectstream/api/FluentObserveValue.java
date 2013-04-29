@@ -18,7 +18,6 @@
 
 package org.objectstream.api;
 
-import org.objectstream.context.CallContext;
 import org.objectstream.spi.ObjectStreamProvider;
 import org.objectstream.value.Value;
 
@@ -27,21 +26,19 @@ public class FluentObserveValue {
             "Please ensure that stream.observe().value() takes a method call to an ObjectStream object as parameter," +
             "for example stream.observe().value(foo.getResult()).with(observer) with foo an ObjectStream proxy";
 
-    private final ObjectStreamProvider streamProvider;
-    private final CallContext context;
+    private final ObjectStreamProvider objectStreamProvider;
 
-    public FluentObserveValue(ObjectStreamProvider stream, CallContext context) {
-        this.streamProvider = stream;
-        this.context = context;
+    public FluentObserveValue(ObjectStreamProvider stream) {
+        this.objectStreamProvider = stream;
     }
 
     public FluentObserveWith value(Object methodCall) {
-        Value value = context.getLastValue();
+        Value value = objectStreamProvider.getContext().getLastValue();
 
         if(value == null){
             throw new RuntimeException("Context error: value not found. " + ERROR_BLURB);
         }
 
-        return new FluentObserveWith(streamProvider, value);
+        return new FluentObserveWith(objectStreamProvider, value);
     }
 }

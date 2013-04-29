@@ -23,17 +23,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.objectstream.context.CallContext;
 import org.objectstream.spi.ObjectStreamProvider;
-import org.objectstream.value.Evaluator;
-import org.objectstream.value.Value;
 
 import java.lang.reflect.Method;
-import java.util.Stack;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EvalHandlerTest {
@@ -42,146 +36,30 @@ public class EvalHandlerTest {
 
 
     @Mock
-    ObjectStreamProvider streamProvider;
-    @Mock
-    ProxyFactory proxyFactory;
-    @Mock
-    CallContext context;
-    Stack<Value> stack;
+    ObjectStreamProvider objectStreamProvider;
 
-    @Mock
     Object object;
-    @Mock
-    Value value, parentValue;
-    @Mock
-    Object oldValue, newValue;
-
-    Method primitiveReadMethod, primitiveWriteMethod, objectReadMethod, objectWriteMethod, voidMethod, nonVoidMethod;
-    Object[] parameters = new Object[]{};
-
-    TestClass testObject;
+    Object[] parameters;
+    Method method;
 
     @Before
     public void setup() throws NoSuchMethodException {
-        handler = new EvalHandler(streamProvider, proxyFactory, context);
-        primitiveReadMethod = TestClass.class.getMethod("getPrimitive", null);
-        primitiveWriteMethod = TestClass.class.getMethod("setPrimitive", Integer.TYPE);
-        objectReadMethod = TestClass.class.getMethod("getObject", null);
-        objectWriteMethod = TestClass.class.getMethod("setObject", Object.class);
-        voidMethod = TestClass.class.getMethod("modify", Integer.TYPE);
-        nonVoidMethod = TestClass.class.getMethod("state", null);
-
-        stack = new Stack<>();
-
-        when(context.getValueStack()).thenReturn(stack);
-        when(streamProvider.value(any(Evaluator.class))).thenReturn(value);
-        when(value.getValue()).thenReturn(oldValue);
-        when(value.eval()).thenReturn(newValue);
-
-        testObject = new TestClass();
+        handler = new EvalHandler(objectStreamProvider);
+        object = new Object();
+        parameters = new Object[]{};
+        method = TestClass.class.getMethod("getValue", null);
     }
 
     @Test
     public void testGetPropertyNewValueEmptyValueStack() {
-        assertTrue(stack.empty());
-        handler.handle(object, primitiveReadMethod, parameters);
+        handler.handle(object, method, parameters);
 
-        assertTrue(stack.empty());
-        verify(context).setLastValue(value);
-        verify(streamProvider).notifyChange(value);
-        verify(streamProvider, never()).bind(any(Value.class), any(Value.class));
-    }
-
-    @Test
-    public void testGetPropertyOldValueEmptyValueStack() {
-        when(value.eval()).thenReturn(oldValue);
-        assertTrue(stack.empty());
-        handler.handle(object, primitiveReadMethod, parameters);
-
-        assertTrue(stack.empty());
-        verify(context).setLastValue(value);
-        verify(streamProvider, never()).notifyChange(any(Value.class));
-        verify(streamProvider, never()).bind(any(Value.class), any(Value.class));
-    }
-
-    @Test
-    public void testGetPropertyNewValueWithValueInStack() {
-        stack.push(parentValue);
-
-        assertEquals(1, stack.size());
-        handler.handle(object, primitiveReadMethod, parameters);
-
-        assertEquals(1, stack.size());
-        assertEquals(parentValue, stack.peek());
-
-        verify(context).setLastValue(value);
-        verify(streamProvider).notifyChange(value);
-        verify(streamProvider).bind(parentValue, value);
-    }
-
-    @Test
-    public void testInvokeNonVoidMethod() {
-        assertTrue(stack.empty());
-        handler.handle(object, nonVoidMethod, parameters);
-
-        assertTrue(stack.empty());
-        verify(context).setLastValue(value);
-        verify(streamProvider).notifyChange(value);
-        verify(streamProvider, never()).bind(any(Value.class), any(Value.class));
-    }
-
-    @Test
-    public void testSetPrimitiveProperty() {
-        handler.handle(testObject, primitiveWriteMethod, new Object[]{new Integer(33)});
-
-        assertEquals(33, testObject.getPrimitive());
-        verify(streamProvider).invalidate(any(Value.class));
-    }
-
-    @Test
-    public void testSetObjectProperty() {
-        Object object = new Object();
-        handler.handle(testObject, objectWriteMethod, new Object[]{object});
-
-        assertEquals(object, testObject.getObject());
-        verify(streamProvider, never()).invalidate(any(Value.class));
-    }
-
-    @Test
-    public void testInvokeVoidMethod() {
-        handler.handle(testObject, voidMethod, new Object[]{new Integer(11)});
-
-        assertEquals(11, testObject.state());
-        verify(streamProvider, never()).invalidate(any(Value.class));
+        verify(objectStreamProvider).eval(object, method, parameters);
     }
 
     private static class TestClass {
-        private int primitive;
-        private Object object;
-        private int state;
-
-        public void setPrimitive(int primitive) {
-            this.primitive = primitive;
-        }
-
-        public int getPrimitive() {
-            return primitive;
-        }
-
-        public void setObject(Object object) {
-            this.object = object;
-        }
-
-        public Object getObject() {
-            return object;
-        }
-
-        public void modify(int state) {
-            this.state = state;
-        }
-
-        public int state() {
-            return this.state;
+        public int getValue() {
+            return 0;
         }
     }
 }

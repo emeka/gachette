@@ -21,11 +21,9 @@ package org.objectstream.instrumentation.cglib;
 
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.objectstream.instrumentation.*;
-
-import static junit.framework.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
+import org.objectstream.instrumentation.AbstractProxyProviderTest;
+import org.objectstream.instrumentation.MethodHandler;
+import org.objectstream.instrumentation.ProxyProvider;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CglibProxyTest extends AbstractProxyProviderTest {

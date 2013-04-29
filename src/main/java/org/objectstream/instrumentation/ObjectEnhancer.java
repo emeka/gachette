@@ -19,6 +19,6 @@
 package org.objectstream.instrumentation;
 
 
-public interface ObjectInstrumentor {
+public interface ObjectEnhancer {
     <T> T enhance(T object);
 }

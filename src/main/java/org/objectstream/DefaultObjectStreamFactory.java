@@ -18,15 +18,19 @@
 
 package org.objectstream;
 
+import org.objectstream.context.ThreadLocalCallContext;
 import org.objectstream.instrumentation.cglib.CglibProxyFactory;
-import org.objectstream.spi.simple.DefaultObjectStreamProvider;
+import org.objectstream.spi.DefaultObjectStreamProvider;
+import org.objectstream.spi.ObjectStreamProvider;
+import org.objectstream.spi.simple.CollectionStreamProvider;
 
 public class DefaultObjectStreamFactory implements ObjectStreamFactory {
     @Override
     public ObjectStream create(){
-        DefaultObjectStreamProvider objectStreamProvider = new DefaultObjectStreamProvider();
-        CglibProxyFactory proxyFactory = new CglibProxyFactory(objectStreamProvider);
-        DefaultObjectStream objectStream = new DefaultObjectStream(objectStreamProvider,proxyFactory);
+        CglibProxyFactory proxyFactory = new CglibProxyFactory();
+        CollectionStreamProvider streamProvider = new CollectionStreamProvider();
+        ObjectStreamProvider objectStreamProvider = new DefaultObjectStreamProvider(streamProvider,proxyFactory,new ThreadLocalCallContext());
+        DefaultObjectStream objectStream = new DefaultObjectStream(objectStreamProvider);
         return objectStream;
     }
 }
