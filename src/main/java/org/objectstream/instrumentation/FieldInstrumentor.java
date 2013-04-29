@@ -18,6 +18,8 @@
 
 package org.objectstream.instrumentation;
 
+import org.objectstream.exceptions.ExceptionUtils;
+
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
@@ -48,10 +50,8 @@ public class FieldInstrumentor implements ObjectInstrumentor {
                     }
                 }
             }
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (Throwable e) {
+            throw ExceptionUtils.wrap(e);
         }
 
         return object;

@@ -20,6 +20,7 @@ package org.objectstream.instrumentation.javassist;
 
 import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
+import org.objectstream.exceptions.ExceptionUtils;
 import org.objectstream.instrumentation.MethodHandler;
 import org.objectstream.instrumentation.ObjectStreamProxy;
 import org.objectstream.instrumentation.ProxyProvider;
@@ -42,10 +43,8 @@ public class JavassistProxy<T> implements ProxyProvider<T> {
         Object wObjPK = null;
         try {
             wObjPK = proxyClass.newInstance();
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (Throwable e) {
+            throw ExceptionUtils.wrap(e);
         }
         ((ProxyObject) wObjPK).setHandler(new ListenerInterceptor(methodHandler));
         return (T) wObjPK;
@@ -62,10 +61,8 @@ public class JavassistProxy<T> implements ProxyProvider<T> {
             Object res = null;
             try {
                 res = interceptor.handle(o, method, arguments);
-            } catch (RuntimeException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+            } catch (Throwable e) {
+                throw ExceptionUtils.wrap(e);
             }
             return res;
         }
