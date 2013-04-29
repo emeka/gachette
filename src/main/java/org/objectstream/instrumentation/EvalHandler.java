@@ -20,6 +20,7 @@ package org.objectstream.instrumentation;
 
 
 import org.objectstream.context.CallContext;
+import org.objectstream.exceptions.ExceptionUtils;
 import org.objectstream.spi.ObjectStreamProvider;
 import org.objectstream.value.MethodEvaluator;
 import org.objectstream.value.Value;
@@ -55,7 +56,7 @@ public class EvalHandler<T> implements MethodHandler {
                 streamProvider.bind(context.getValueStack().peek(), value);
             }
 
-            if(!res.equals(oldValue)){
+            if (!res.equals(oldValue)) {
                 streamProvider.notifyChange(value);
             }
 
@@ -67,10 +68,8 @@ public class EvalHandler<T> implements MethodHandler {
                 if (readPropertyValue != null) {
                     streamProvider.invalidate(readPropertyValue);
                 }
-            } catch (RuntimeException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+            } catch (Throwable e) {
+                throw ExceptionUtils.wrap(e);
             }
         }
 
@@ -92,10 +91,8 @@ public class EvalHandler<T> implements MethodHandler {
                     }
                 }
             }
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (Throwable e) {
+            throw ExceptionUtils.wrap(e);
         }
         return result;
     }

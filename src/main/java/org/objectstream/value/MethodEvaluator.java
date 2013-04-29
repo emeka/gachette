@@ -18,6 +18,7 @@
 
 package org.objectstream.value;
 
+import org.objectstream.exceptions.ExceptionUtils;
 import org.objectstream.instrumentation.ProxyFactory;
 
 import java.lang.reflect.Method;
@@ -45,12 +46,10 @@ public class MethodEvaluator<T> implements Evaluator<T> {
         T result;
         try {
             result = (T) method.invoke(object, parameters);
-        } catch (RuntimeException e) {
-            throw e;
         } catch (IllegalAccessException e) {
             throw new RuntimeException(String.format("Cannot invoke '%s' on %s. Please ensure that the method is public.", method, object), e);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (Throwable e) {
+            throw ExceptionUtils.wrap(e);
         }
 
         return result;
@@ -64,18 +63,19 @@ public class MethodEvaluator<T> implements Evaluator<T> {
         return hash;
     }
 
-    @Override public boolean equals(Object object) {
-        if(object == this) return true;
-        if(object == null) return false;
-        if(this.getClass() != object.getClass()) return false;
+    @Override
+    public boolean equals(Object object) {
+        if (object == this) return true;
+        if (object == null) return false;
+        if (this.getClass() != object.getClass()) return false;
         MethodEvaluator other = (MethodEvaluator) object;
 
         return this.object.equals(other.object) &&
-               this.method.equals(other.method) &&
-               Arrays.equals(this.parameters, other.parameters);
+                this.method.equals(other.method) &&
+                Arrays.equals(this.parameters, other.parameters);
     }
 
-    public String toString(){
-        return String.format("Method(%s,%s,%s)", object,method,parameters);
+    public String toString() {
+        return String.format("Method(%s,%s,%s)", object, method, parameters);
     }
 }

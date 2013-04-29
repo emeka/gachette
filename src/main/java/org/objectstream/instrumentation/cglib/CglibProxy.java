@@ -20,6 +20,7 @@ package org.objectstream.instrumentation.cglib;
 
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodProxy;
+import org.objectstream.exceptions.ExceptionUtils;
 import org.objectstream.instrumentation.MethodHandler;
 import org.objectstream.instrumentation.ObjectStreamProxy;
 import org.objectstream.instrumentation.ProxyProvider;
@@ -53,10 +54,8 @@ public class CglibProxy<T>  implements ProxyProvider<T> {
             Object res;
             try {
                 res = interceptor.handle(o, method, arguments);
-            } catch (RuntimeException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+            } catch (Throwable e) {
+                throw ExceptionUtils.wrap(e);
             }
 
             return res;
