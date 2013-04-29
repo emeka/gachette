@@ -18,24 +18,22 @@
 
 package org.objectstream.api;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.objectstream.context.CallContext;
-import org.objectstream.instrumentation.MethodHandler;
 import org.objectstream.spi.ObjectStreamProvider;
 import org.objectstream.value.Value;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FluentObserveValueTest {
 
     @Mock
-    ObjectStreamProvider streamProvider;
+    ObjectStreamProvider objectStreamProvider;
 
     @Mock
     CallContext callContext;
@@ -45,13 +43,14 @@ public class FluentObserveValueTest {
 
     @Test
     public void testValue(){
+        when(objectStreamProvider.getContext()).thenReturn(callContext);
         when(callContext.getLastValue()).thenReturn(value);
-        assertTrue((new FluentObserveValue(streamProvider,callContext)).value(new Object()) instanceof FluentObserveWith);
+        assertTrue((new FluentObserveValue(objectStreamProvider)).value(new Object()) instanceof FluentObserveWith);
     }
 
     @Test(expected = RuntimeException.class)
     public void testException(){
         when(callContext.getLastValue()).thenReturn(null);
-        assertTrue((new FluentObserveValue(streamProvider,callContext)).value(new Object()) instanceof FluentObserveWith);
+        assertTrue((new FluentObserveValue(objectStreamProvider)).value(new Object()) instanceof FluentObserveWith);
     }
 }

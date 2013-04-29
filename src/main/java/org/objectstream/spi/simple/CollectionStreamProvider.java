@@ -19,7 +19,7 @@
 package org.objectstream.spi.simple;
 
 
-import org.objectstream.spi.ObjectStreamProvider;
+import org.objectstream.spi.StreamProvider;
 import org.objectstream.value.Evaluator;
 import org.objectstream.value.Value;
 import org.objectstream.value.ValueObserver;
@@ -29,7 +29,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class DefaultObjectStreamProvider implements ObjectStreamProvider {
+public class CollectionStreamProvider implements StreamProvider {
+
     private final Set<Value> nodes = new HashSet<>();
     private final Map<Evaluator, Value> nodeMap = new HashMap<>();
     private final Map<Value, Set<ValueObserver>> nodeObservers = new HashMap<>();

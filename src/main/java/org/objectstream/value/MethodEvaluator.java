@@ -19,7 +19,7 @@
 package org.objectstream.value;
 
 import org.objectstream.exceptions.ExceptionUtils;
-import org.objectstream.instrumentation.ProxyFactory;
+import org.objectstream.spi.ObjectStreamProvider;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -30,18 +30,18 @@ public class MethodEvaluator<T> implements Evaluator<T> {
     private final Object object;
     private final Method method;
     private final Object[] parameters;
-    private final ProxyFactory proxyFactory;
+    private final ObjectStreamProvider objectStreamProvider;
 
-    public MethodEvaluator(Object object, Method method, Object[] parameters, ProxyFactory proxyFactory) {
+    public MethodEvaluator(Object object, Method method, Object[] parameters, ObjectStreamProvider objectStreamProvider) {
         this.object = object;
         this.method = method;
         this.parameters = parameters;
-        this.proxyFactory = proxyFactory;
+        this.objectStreamProvider = objectStreamProvider;
     }
 
     @Override
     public T eval() {
-        proxyFactory.instrumentField(object);
+        objectStreamProvider.enhance(object);
 
         T result;
         try {

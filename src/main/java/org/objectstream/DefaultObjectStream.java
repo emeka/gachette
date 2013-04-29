@@ -19,31 +19,23 @@
 package org.objectstream;
 
 import org.objectstream.api.FluentObserveValue;
-import org.objectstream.context.CallContext;
-import org.objectstream.context.ThreadLocalCallContext;
-import org.objectstream.instrumentation.ProxyFactory;
-import org.objectstream.instrumentation.cglib.CglibProxyFactory;
 import org.objectstream.spi.ObjectStreamProvider;
-import org.objectstream.spi.simple.DefaultObjectStreamProvider;
 
 public class DefaultObjectStream implements ObjectStream {
-    private final ObjectStreamProvider streamProvider;
-    private final ProxyFactory proxyFactory;
+    private final ObjectStreamProvider objectStreamProvider;
 
 
-    public DefaultObjectStream(ObjectStreamProvider streamProvider, ProxyFactory proxyFactory) {
-        this.streamProvider = streamProvider;
-        this.proxyFactory = proxyFactory;
+    public DefaultObjectStream(ObjectStreamProvider objectStreamProvider) {
+        this.objectStreamProvider = objectStreamProvider;
     }
 
     @Override
     public <T> T object(T object) {
-        return proxyFactory.createObjectProxy(object);
+        return objectStreamProvider.createProxy(object);
     }
 
     @Override
     public FluentObserveValue observe() {
-        CallContext context = new ThreadLocalCallContext();
-        return new FluentObserveValue(streamProvider, context);
+        return new FluentObserveValue(objectStreamProvider);
     }
 }

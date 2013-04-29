@@ -23,19 +23,20 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.objectstream.instrumentation.ProxyFactory;
+import org.objectstream.spi.ObjectStreamProvider;
 
 import java.lang.reflect.Method;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MethodEvaluatorTest {
 
     MethodEvaluator methodEvaluator;
     @Mock
-    ProxyFactory proxyFactory;
+    ObjectStreamProvider objectStreamProvider;
 
     TestClass target;
     Method primitiveReadMethod, primitiveWriteMethod;
@@ -49,26 +50,26 @@ public class MethodEvaluatorTest {
 
     @Test
     public void test() throws NoSuchMethodException {
-        methodEvaluator = new MethodEvaluator(target, primitiveWriteMethod, new Object[]{new Integer(10)}, proxyFactory);
+        methodEvaluator = new MethodEvaluator(target, primitiveWriteMethod, new Object[]{new Integer(10)}, objectStreamProvider);
         assertNull(methodEvaluator.eval());
         assertEquals(10, target.getPrimitive());
 
-        methodEvaluator = new MethodEvaluator(target, primitiveReadMethod, null, proxyFactory);
+        methodEvaluator = new MethodEvaluator(target, primitiveReadMethod, null, objectStreamProvider);
         assertEquals(10, methodEvaluator.eval());
 
-        verify(proxyFactory, times(2)).instrumentField(target);
+        verify(objectStreamProvider, times(2)).enhance(target);
     }
 
     @Test
     public void testToString() {
-        methodEvaluator = new MethodEvaluator(target, primitiveWriteMethod, new Object[]{new Integer(10)}, proxyFactory);
+        methodEvaluator = new MethodEvaluator(target, primitiveWriteMethod, new Object[]{new Integer(10)}, objectStreamProvider);
         assertTrue(methodEvaluator.toString().startsWith("Method("));
     }
 
     @Test
     public void testSameValue() {
-        MethodEvaluator methodEvaluator1 = new MethodEvaluator(target, primitiveWriteMethod, new Object[]{new Integer(10)}, proxyFactory);
-        MethodEvaluator methodEvaluator2 = new MethodEvaluator(target, primitiveWriteMethod, new Object[]{new Integer(10)}, proxyFactory);
+        MethodEvaluator methodEvaluator1 = new MethodEvaluator(target, primitiveWriteMethod, new Object[]{new Integer(10)}, objectStreamProvider);
+        MethodEvaluator methodEvaluator2 = new MethodEvaluator(target, primitiveWriteMethod, new Object[]{new Integer(10)}, objectStreamProvider);
 
         assertEquals(methodEvaluator1.hashCode(), methodEvaluator2.hashCode());
         assertEquals(methodEvaluator1, methodEvaluator2);
@@ -78,10 +79,10 @@ public class MethodEvaluatorTest {
     public void testDifferentValue() {
         TestClass otherTarget = new TestClass();
 
-        MethodEvaluator methodEvaluator1 = new MethodEvaluator(target, primitiveWriteMethod, new Object[]{new Integer(10)}, proxyFactory);
-        MethodEvaluator methodEvaluator2 = new MethodEvaluator(otherTarget, primitiveWriteMethod, new Object[]{new Integer(10)}, proxyFactory);
-        MethodEvaluator methodEvaluator3 = new MethodEvaluator(target, primitiveWriteMethod, new Object[]{new Integer(20)}, proxyFactory);
-        MethodEvaluator methodEvaluator4 = new MethodEvaluator(target, primitiveReadMethod, null, proxyFactory);
+        MethodEvaluator methodEvaluator1 = new MethodEvaluator(target, primitiveWriteMethod, new Object[]{new Integer(10)}, objectStreamProvider);
+        MethodEvaluator methodEvaluator2 = new MethodEvaluator(otherTarget, primitiveWriteMethod, new Object[]{new Integer(10)}, objectStreamProvider);
+        MethodEvaluator methodEvaluator3 = new MethodEvaluator(target, primitiveWriteMethod, new Object[]{new Integer(20)}, objectStreamProvider);
+        MethodEvaluator methodEvaluator4 = new MethodEvaluator(target, primitiveReadMethod, null, objectStreamProvider);
 
         assertNotEquals(methodEvaluator1.hashCode(), methodEvaluator2.hashCode());
         assertNotEquals(methodEvaluator1, methodEvaluator2);

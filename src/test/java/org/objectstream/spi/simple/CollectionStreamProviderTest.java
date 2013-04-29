@@ -23,22 +23,25 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.objectstream.context.CallContext;
+import org.objectstream.instrumentation.ProxyFactory;
 import org.objectstream.value.Evaluator;
 import org.objectstream.value.Value;
 import org.objectstream.value.ValueObserver;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DefaultObjectStreamProviderTest {
+public class CollectionStreamProviderTest {
 
-    private DefaultObjectStreamProvider streamProvider;
+    private CollectionStreamProvider streamProvider;
+
+    @Mock
+    ProxyFactory proxyFactory;
+
+    @Mock
+    CallContext context;
 
     @Mock
     Evaluator evaluator1, evaluator2;
@@ -51,7 +54,7 @@ public class DefaultObjectStreamProviderTest {
 
     @Before
     public void setup() {
-        streamProvider = new DefaultObjectStreamProvider();
+        streamProvider = new CollectionStreamProvider();
         when(evaluator1.eval()).thenReturn(null);
         when(evaluator2.eval()).thenReturn(null);
     }

@@ -19,81 +19,18 @@
 package org.objectstream.instrumentation;
 
 
-import org.objectstream.context.CallContext;
-import org.objectstream.exceptions.ExceptionUtils;
 import org.objectstream.spi.ObjectStreamProvider;
-import org.objectstream.value.MethodEvaluator;
-import org.objectstream.value.Value;
 
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 
 public class EvalHandler<T> implements MethodHandler {
-    private final ObjectStreamProvider streamProvider;
-    private final ProxyFactory proxyFactory;
-    private final CallContext context;
+    private final ObjectStreamProvider objectStreamProvider;
 
-    public EvalHandler(ObjectStreamProvider stream, ProxyFactory proxyFactory, CallContext context) {
-        this.streamProvider = stream;
-        this.proxyFactory = proxyFactory;
-        this.context = context;
+    public EvalHandler(ObjectStreamProvider stream) {
+        this.objectStreamProvider = stream;
     }
 
     public Object handle(Object object, Method method, Object[] objects) {
-
-        Object res = null;
-        if (method.getReturnType() != Void.TYPE) {
-            Value value = streamProvider.value(new MethodEvaluator(object, method, objects, proxyFactory));
-            context.getValueStack().push(value);
-            context.setLastValue(value);
-
-            Object oldValue = value.getValue();
-            res = value.eval(); //this call must be between the push and the pop
-
-            context.getValueStack().pop();
-            if (!context.getValueStack().empty()) {
-                streamProvider.bind(context.getValueStack().peek(), value);
-            }
-
-            if (!res.equals(oldValue)) {
-                streamProvider.notifyChange(value);
-            }
-
-        } else {
-            try {
-                res = method.invoke(object, objects);
-                //If it is writing a property with a primitive type, invalidate the corresponding get value.
-                Value readPropertyValue = findReadPropertyValue(object, method, objects);
-                if (readPropertyValue != null) {
-                    streamProvider.invalidate(readPropertyValue);
-                }
-            } catch (Throwable e) {
-                throw ExceptionUtils.wrap(e);
-            }
-        }
-
-        return res;
-    }
-
-    private Value findReadPropertyValue(Object object, Method method, Object[] objects) {
-        Value result = null;
-        try {
-            for (PropertyDescriptor propertyDescriptor :
-                    Introspector.getBeanInfo(object.getClass(), Object.class).getPropertyDescriptors()) {
-                if (propertyDescriptor.getPropertyType().isPrimitive()) {
-                    Method write = propertyDescriptor.getWriteMethod();
-                    if (write != null && write.equals(method)) {
-                        Method read = propertyDescriptor.getReadMethod();
-                        if (read != null) {
-                            result = streamProvider.value(new MethodEvaluator(object, read, new Object[]{}, proxyFactory));
-                        }
-                    }
-                }
-            }
-        } catch (Throwable e) {
-            throw ExceptionUtils.wrap(e);
-        }
-        return result;
+        return objectStreamProvider.eval(object, method, objects);
     }
 }

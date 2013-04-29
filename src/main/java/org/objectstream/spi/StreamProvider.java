@@ -18,14 +18,11 @@
 
 package org.objectstream.spi;
 
-import org.objectstream.context.CallContext;
 import org.objectstream.value.Evaluator;
 import org.objectstream.value.Value;
 import org.objectstream.value.ValueObserver;
 
-import java.lang.reflect.Method;
-
-public interface ObjectStreamProvider {
+public interface StreamProvider {
     Value value(Evaluator calculator);
 
     <M> void observe(Value<M> value, ValueObserver<M> observer); //
@@ -35,12 +32,4 @@ public interface ObjectStreamProvider {
     void invalidate(Value readPropertyValue);
 
     void notifyChange(Value value);
-
-    Object eval(Object object, Method method, Object[] objects);
-
-    CallContext getContext();  //api
-
-    <T> T createProxy(T object);   //api
-
-    void enhance(Object object);
 }

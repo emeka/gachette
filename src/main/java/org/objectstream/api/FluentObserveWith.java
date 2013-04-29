@@ -23,15 +23,15 @@ import org.objectstream.value.Value;
 import org.objectstream.value.ValueObserver;
 
 public class FluentObserveWith {
-    private final ObjectStreamProvider streamProvider;
+    private final ObjectStreamProvider objectStreamProvider;
     private final Value value;
     
-    public FluentObserveWith(ObjectStreamProvider streamProvider, Value value){
-        this.streamProvider = streamProvider;
+    public FluentObserveWith(ObjectStreamProvider objectStreamProvider, Value value){
+        this.objectStreamProvider = objectStreamProvider;
         this.value = value;
     }
     
     public void with(ValueObserver observer) {
-        streamProvider.observe(value, observer);
+        objectStreamProvider.observe(value, observer);
     }
 }

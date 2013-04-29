@@ -24,7 +24,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.objectstream.api.FluentObserveValue;
-import org.objectstream.instrumentation.ProxyFactory;
 import org.objectstream.spi.ObjectStreamProvider;
 
 import static org.junit.Assert.assertTrue;
@@ -36,14 +35,11 @@ public class DefaultObjectStreamTest {
     DefaultObjectStream objectStream;
 
     @Mock
-    ObjectStreamProvider streamProvider;
-
-    @Mock
-    ProxyFactory proxyFactory;
+    ObjectStreamProvider objectStreamProvider;
 
     @Before
     public void setup(){
-        objectStream = new DefaultObjectStream(streamProvider,proxyFactory);
+        objectStream = new DefaultObjectStream(objectStreamProvider);
     }
 
     @Test
@@ -51,7 +47,7 @@ public class DefaultObjectStreamTest {
         assertTrue(objectStream.observe() instanceof FluentObserveValue);
         Object target = new Object();
         objectStream.object(target);
-        verify(proxyFactory).createObjectProxy(target);
+        verify(objectStreamProvider).createProxy(target);
     }
 
 }

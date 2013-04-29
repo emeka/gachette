@@ -19,17 +19,18 @@
 package org.objectstream.instrumentation;
 
 import org.objectstream.exceptions.ExceptionUtils;
+import org.objectstream.spi.ObjectStreamProvider;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 
-public class FieldInstrumentor implements ObjectInstrumentor {
+public class FieldEnhancer implements ObjectEnhancer {
 
-    private final ProxyFactory proxyFactory;
+    private final ObjectStreamProvider objectStreamProvider;
 
-    public FieldInstrumentor(ProxyFactory proxyFactory) {
-        this.proxyFactory = proxyFactory;
+    public FieldEnhancer(ObjectStreamProvider objectStreamProvider) {
+        this.objectStreamProvider = objectStreamProvider;
     }
 
     @Override
@@ -45,7 +46,7 @@ public class FieldInstrumentor implements ObjectInstrumentor {
                     Object originalValue = null;
                     originalValue = read.invoke(object);
                     if (originalValue != null) {
-                        Object proxy = proxyFactory.createObjectProxy(originalValue);
+                        Object proxy = objectStreamProvider.createProxy(originalValue);
                         write.invoke(object, proxy);
                     }
                 }

@@ -22,9 +22,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.objectstream.instrumentation.MethodHandler;
 import org.objectstream.instrumentation.ObjectStreamProxy;
-import org.objectstream.instrumentation.cglib.CglibProxy;
-import org.objectstream.instrumentation.cglib.CglibProxyFactory;
 import org.objectstream.spi.ObjectStreamProvider;
 
 import static org.junit.Assert.assertTrue;
@@ -33,10 +32,13 @@ import static org.junit.Assert.assertTrue;
 public class JavassistProxyFactoryTest {
 
     @Mock
-    ObjectStreamProvider streamProvider;
+    ObjectStreamProvider objectStreamProvider;
+
+    @Mock
+    MethodHandler handler;
 
     @Test
     public void test() {
-        assertTrue((new JavassistProxyFactory(streamProvider)).createObjectProxy(new Object()) instanceof ObjectStreamProxy);
+        assertTrue((new JavassistProxyFactory()).createObjectProxy(new Object(), handler) instanceof ObjectStreamProxy);
     }
 }

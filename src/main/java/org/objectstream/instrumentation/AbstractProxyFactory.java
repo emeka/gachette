@@ -19,28 +19,17 @@
 package org.objectstream.instrumentation;
 
 
-import org.objectstream.context.CallContext;
-import org.objectstream.context.ThreadLocalCallContext;
-import org.objectstream.spi.ObjectStreamProvider;
-
 public abstract class AbstractProxyFactory implements ProxyFactory {
-    private final ObjectStreamProvider streamProvider;
-
-    public AbstractProxyFactory(ObjectStreamProvider streamProvider) {
-        this.streamProvider = streamProvider;
-    }
-
-    public <T> T instrumentField(T object){
-        ObjectInstrumentor enhancer = new FieldInstrumentor(this);
+    public <T> T enhance(T object, ObjectEnhancer objectEnhancer){
+        ObjectEnhancer enhancer = objectEnhancer;
         return enhancer.enhance(object);
     }
 
-    public <T> T createObjectProxy(T object) {
+    public <T> T createObjectProxy(T object, MethodHandler handler) {
         if(object instanceof ObjectStreamProxy){
             return object;
         }
-        CallContext context = new ThreadLocalCallContext();
-        ProxyProvider<T> pf = getProxyFactory(new ContextualHandler<>(object, context,new EvalHandler<>(streamProvider, this, context)));
+        ProxyProvider<T> pf = getProxyFactory(handler);
         return pf.create(object);
     }
 
