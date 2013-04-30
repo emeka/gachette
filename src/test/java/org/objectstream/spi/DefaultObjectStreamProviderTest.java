@@ -18,22 +18,23 @@
 
 package org.objectstream.spi;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.objectstream.context.CallContext;
+import org.objectstream.instrumentation.ObjectStreamProxy;
 import org.objectstream.instrumentation.ProxyFactory;
 import org.objectstream.value.Evaluator;
 import org.objectstream.value.Value;
-import org.objectstream.value.ValueObserver;
 
 import java.lang.reflect.Method;
 import java.util.Stack;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -57,14 +58,16 @@ public class DefaultObjectStreamProviderTest {
     @Mock
     Object oldValue, newValue;
 
-    Method primitiveReadMethod, primitiveWriteMethod, objectReadMethod, objectWriteMethod, voidMethod, nonVoidMethod;
+    Method primitiveReadMethod, primitiveWriteMethod, objectReadMethod, objectWriteMethod, voidMethod,
+            nonVoidMethod, hashCodeMethod, equalsMethod, getOriginalObjectMethod;
+
     Object[] parameters = new Object[]{};
 
     TestClass testObject;
 
     @Before
     public void setup() throws NoSuchMethodException {
-        objectStreamProvider = new DefaultObjectStreamProvider(streamProvider,proxyFactory, context);
+        objectStreamProvider = new DefaultObjectStreamProvider(streamProvider, proxyFactory, context);
 
         primitiveReadMethod = TestClass.class.getMethod("getPrimitive", null);
         primitiveWriteMethod = TestClass.class.getMethod("setPrimitive", Integer.TYPE);
@@ -72,6 +75,9 @@ public class DefaultObjectStreamProviderTest {
         objectWriteMethod = TestClass.class.getMethod("setObject", Object.class);
         voidMethod = TestClass.class.getMethod("modify", Integer.TYPE);
         nonVoidMethod = TestClass.class.getMethod("state", null);
+        hashCodeMethod = TestClass.class.getMethod("hashCode", null);
+        equalsMethod = TestClass.class.getMethod("equals", Object.class);
+        getOriginalObjectMethod = TestClass.class.getMethod("getOriginalObject", null);
 
         stack = new Stack<>();
 
@@ -81,6 +87,14 @@ public class DefaultObjectStreamProviderTest {
         when(value.eval()).thenReturn(newValue);
 
         testObject = new TestClass();
+    }
+
+    @Test
+    public void testHashCode(){
+        ObjectStreamProxy proxy = mock(ObjectStreamProxy.class);
+        when(proxy.getOriginalObject()).thenReturn(testObject);
+
+        assertEquals(objectStreamProvider.hashCode(testObject), objectStreamProvider.hashCode(proxy));
     }
 
     @Test
@@ -146,7 +160,7 @@ public class DefaultObjectStreamProviderTest {
         objectStreamProvider.eval(testObject, objectWriteMethod, new Object[]{object});
 
         assertEquals(object, testObject.getObject());
-        verify(streamProvider, never()).invalidate(any(Value.class));
+        verify(streamProvider, times(1)).invalidate(any(Value.class));
     }
 
     @Test
@@ -155,6 +169,26 @@ public class DefaultObjectStreamProviderTest {
 
         assertEquals(11, testObject.state());
         verify(streamProvider, never()).invalidate(any(Value.class));
+    }
+
+    @Test
+    public void testInvokeHashCode() {
+        int hashCode = (Integer) objectStreamProvider.eval(testObject, hashCodeMethod, new Object[]{});
+
+        assertEquals(testObject.hashCode(), hashCode);
+        verify(streamProvider, never()).value(any(Evaluator.class));
+    }
+
+    @Test
+    public void testInvokeEquals() {
+        assertTrue((Boolean) objectStreamProvider.eval(testObject, equalsMethod, new Object[]{testObject}));
+        verify(streamProvider, never()).value(any(Evaluator.class));
+    }
+
+    @Test
+    public void testInvokeGetOriginalObject() {
+        assertSame(testObject, objectStreamProvider.eval(testObject, getOriginalObjectMethod, new Object[]{}));
+        verify(streamProvider, never()).value(any(Evaluator.class));
     }
 
     private static class TestClass {
@@ -184,6 +218,26 @@ public class DefaultObjectStreamProviderTest {
 
         public int state() {
             return this.state;
+        }
+
+        //Just to get the corresponding Method object
+        public Object getOriginalObject() {
+            return null;
+        }
+
+        @Override
+        public int hashCode() {
+            return new HashCodeBuilder(17, 37).append(primitive).append(object).append(state).toHashCode();
+        }
+
+        @Override
+        public boolean equals(Object object) {
+            if (object == this) return true;
+            if (object == null) return false;
+            if (this.getClass() != object.getClass()) return false;
+            TestClass other = (TestClass) object;
+            return new EqualsBuilder().append(primitive, other.primitive)
+                    .append(object, other.object).append(state, other.state).isEquals();
         }
     }
 }

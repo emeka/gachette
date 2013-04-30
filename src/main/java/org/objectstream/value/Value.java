@@ -58,17 +58,19 @@ public class Value<M> {
         return value;
     }
 
+    @Override
     public int hashCode() {
         return calculator.hashCode();
     }
 
-    @Override public boolean equals(Object object) {
+    @Override
+    public boolean equals(Object object) {
         if(object == this) return true;
         if(object == null) return false;
         if(this.getClass() != object.getClass()) return false;
         Value other = (Value) object;
 
-        return this.calculator.equals(other.calculator);
+        return calculator.equals(other.calculator);
     }
 
     public String toString(){

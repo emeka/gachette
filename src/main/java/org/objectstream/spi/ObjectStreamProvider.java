@@ -26,7 +26,7 @@ import org.objectstream.value.ValueObserver;
 import java.lang.reflect.Method;
 
 public interface ObjectStreamProvider {
-    Value value(Evaluator calculator);
+    Value value(Object object, Method method, Object[] objects);
 
     <M> void observe(Value<M> value, ValueObserver<M> observer); //
 
@@ -43,4 +43,6 @@ public interface ObjectStreamProvider {
     <T> T createProxy(T object);   //api
 
     void enhance(Object object);
+
+    int hashCode(Object object);
 }

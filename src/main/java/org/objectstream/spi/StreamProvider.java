@@ -29,6 +29,8 @@ public interface StreamProvider {
 
     void bind(Value parent, Value child);
 
+    void unbind(Value parent, Value child);
+
     void invalidate(Value readPropertyValue);
 
     void notifyChange(Value value);

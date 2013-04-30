@@ -18,6 +18,9 @@
 
 package org.objectstream.model;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 public class C {
     private long value;
 
@@ -27,5 +30,19 @@ public class C {
 
     public void setValue(long value) {
         this.value = value;
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17,37).append(value).toHashCode();
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (object == this) return true;
+        if (object == null) return false;
+        if (this.getClass() != object.getClass()) return false;
+        C other = (C) object;
+        return new EqualsBuilder().append(value, other.value).isEquals();
     }
 }

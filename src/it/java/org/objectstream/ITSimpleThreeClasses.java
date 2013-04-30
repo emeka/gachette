@@ -106,6 +106,39 @@ public class ITSimpleThreeClasses {
     }
 
     @Test
+    public void testSetNewObject(){
+        c.setValue(1);
+        b.setValue(10);
+        b.setC(c);
+        a.setValue(100);
+        a.setB(b);
+
+        assertEquals(111, a.getResult());
+
+        b = stream.object(new B());
+        b.setValue(20);
+        b.setC(c);
+        a.setB(b);
+
+        assertEquals(121, a.getResult());
+    }
+
+    @Test
+    public void testSetObjectToNull(){
+        c.setValue(1);
+        b.setValue(10);
+        b.setC(c);
+        a.setValue(100);
+        a.setB(b);
+
+        assertEquals(111, a.getResult());
+
+        a.setB(null);
+
+        assertEquals(100, a.getResult());
+    }
+
+    @Test
     public void testSimpleWithListener() {
         c.setValue(1);
         b.setValue(10);
