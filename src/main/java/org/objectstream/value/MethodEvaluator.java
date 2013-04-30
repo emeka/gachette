@@ -18,11 +18,12 @@
 
 package org.objectstream.value;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.objectstream.exceptions.ExceptionUtils;
 import org.objectstream.spi.ObjectStreamProvider;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 
 
 public class MethodEvaluator<T> implements Evaluator<T> {
@@ -55,24 +56,26 @@ public class MethodEvaluator<T> implements Evaluator<T> {
         return result;
     }
 
+    @Override
     public int hashCode() {
-        int hash = 1;
-        hash = hash * 17 + object.hashCode();
-        hash = hash * 31 + method.hashCode();
-        hash = hash * 13 + Arrays.hashCode(parameters);
-        return hash;
+        //We use ProxyUtils.hashCode because the object hash code should not change if the object field values change.
+        //A MethodEvaluator should return the same hash code if calling the same method on the same object with the
+        //same parameters.  This will cause problem when we are using a distributed solution spanning several VM as we
+        //want to be able to send value update cross VM.  We will certainly need an id as Hibernate does.
+        return new HashCodeBuilder().append(objectStreamProvider.hashCode(object)).append(method).append(parameters).toHashCode();
     }
 
     @Override
-    public boolean equals(Object object) {
-        if (object == this) return true;
-        if (object == null) return false;
-        if (this.getClass() != object.getClass()) return false;
-        MethodEvaluator other = (MethodEvaluator) object;
+    public boolean equals(Object otherObject) {
+        if (otherObject == this) return true;
+        if (otherObject == null) return false;
+        if (this.getClass() != otherObject.getClass()) return false;
+        MethodEvaluator other = (MethodEvaluator) otherObject;
 
-        return this.object.equals(other.object) &&
-                this.method.equals(other.method) &&
-                Arrays.equals(this.parameters, other.parameters);
+        return new EqualsBuilder()
+                .append(objectStreamProvider.hashCode(object),objectStreamProvider.hashCode(other.object))
+                .append(method, other.method)
+                .append(parameters, other.parameters).isEquals();
     }
 
     public String toString() {

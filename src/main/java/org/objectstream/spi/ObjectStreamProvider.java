@@ -43,4 +43,6 @@ public interface ObjectStreamProvider {
     <T> T createProxy(T object);   //api
 
     void enhance(Object object);
+
+    int hashCode(Object object);
 }

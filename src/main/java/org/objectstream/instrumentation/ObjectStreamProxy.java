@@ -19,4 +19,5 @@
 package org.objectstream.instrumentation;
 
 public interface ObjectStreamProxy {
+    Object getOriginalObject();
 }

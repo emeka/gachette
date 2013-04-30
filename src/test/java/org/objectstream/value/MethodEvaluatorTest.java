@@ -28,8 +28,10 @@ import org.objectstream.spi.ObjectStreamProvider;
 import java.lang.reflect.Method;
 
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MethodEvaluatorTest {
@@ -46,6 +48,7 @@ public class MethodEvaluatorTest {
         target = new TestClass();
         primitiveReadMethod = TestClass.class.getMethod("getPrimitive", null);
         primitiveWriteMethod = TestClass.class.getMethod("setPrimitive", Integer.TYPE);
+        when(objectStreamProvider.hashCode(any(Object.class))).thenReturn(1111);
     }
 
     @Test
@@ -67,7 +70,7 @@ public class MethodEvaluatorTest {
     }
 
     @Test
-    public void testSameValue() {
+    public void testEqualValue() {
         MethodEvaluator methodEvaluator1 = new MethodEvaluator(target, primitiveWriteMethod, new Object[]{new Integer(10)}, objectStreamProvider);
         MethodEvaluator methodEvaluator2 = new MethodEvaluator(target, primitiveWriteMethod, new Object[]{new Integer(10)}, objectStreamProvider);
 
@@ -76,19 +79,31 @@ public class MethodEvaluatorTest {
     }
 
     @Test
-    public void testDifferentValue() {
+    public void testNotEqualObject() {
         TestClass otherTarget = new TestClass();
 
         MethodEvaluator methodEvaluator1 = new MethodEvaluator(target, primitiveWriteMethod, new Object[]{new Integer(10)}, objectStreamProvider);
         MethodEvaluator methodEvaluator2 = new MethodEvaluator(otherTarget, primitiveWriteMethod, new Object[]{new Integer(10)}, objectStreamProvider);
-        MethodEvaluator methodEvaluator3 = new MethodEvaluator(target, primitiveWriteMethod, new Object[]{new Integer(20)}, objectStreamProvider);
-        MethodEvaluator methodEvaluator4 = new MethodEvaluator(target, primitiveReadMethod, null, objectStreamProvider);
+        when(objectStreamProvider.hashCode(target)).thenReturn(1111);
+        when(objectStreamProvider.hashCode(otherTarget)).thenReturn(2222);
 
         assertNotEquals(methodEvaluator1.hashCode(), methodEvaluator2.hashCode());
         assertNotEquals(methodEvaluator1, methodEvaluator2);
+    }
+
+    @Test
+    public void testNotEqualMethod() {
+        MethodEvaluator methodEvaluator1 = new MethodEvaluator(target, primitiveWriteMethod, new Object[]{new Integer(10)}, objectStreamProvider);
+        MethodEvaluator methodEvaluator3 = new MethodEvaluator(target, primitiveWriteMethod, new Object[]{new Integer(20)}, objectStreamProvider);
 
         assertNotEquals(methodEvaluator1.hashCode(), methodEvaluator3.hashCode());
         assertNotEquals(methodEvaluator1, methodEvaluator3);
+    }
+
+    @Test
+    public void testNotEqualParameters() {
+        MethodEvaluator methodEvaluator1 = new MethodEvaluator(target, primitiveWriteMethod, new Object[]{new Integer(10)}, objectStreamProvider);
+        MethodEvaluator methodEvaluator4 = new MethodEvaluator(target, primitiveReadMethod, null, objectStreamProvider);
 
         assertNotEquals(methodEvaluator1.hashCode(), methodEvaluator4.hashCode());
         assertNotEquals(methodEvaluator1, methodEvaluator4);
