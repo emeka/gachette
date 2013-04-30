@@ -93,6 +93,22 @@ Object o = cons.newInstance("JLabel");
     }
 
     @Override
+    public void unbind(Value parent, Value child) {
+        verify(parent);
+        verify(child);
+
+        Set<Value> children = nodeChildren.get(parent);
+        if (children != null) {
+            children.remove(child);
+        }
+
+        Set<Value> parents = nodeParents.get(child);
+        if (parents != null) {
+            parents.remove(parent);
+        }
+    }
+
+    @Override
     public void notifyChange(Value value) {
         Set<ValueObserver> observers = nodeObservers.get(value);
         if (observers != null) {

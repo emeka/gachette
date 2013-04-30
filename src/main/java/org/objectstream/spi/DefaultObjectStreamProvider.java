@@ -24,7 +24,6 @@ import org.objectstream.instrumentation.ContextualHandler;
 import org.objectstream.instrumentation.EvalHandler;
 import org.objectstream.instrumentation.FieldEnhancer;
 import org.objectstream.instrumentation.ProxyFactory;
-import org.objectstream.value.Evaluator;
 import org.objectstream.value.MethodEvaluator;
 import org.objectstream.value.Value;
 import org.objectstream.value.ValueObserver;
@@ -32,8 +31,14 @@ import org.objectstream.value.ValueObserver;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class DefaultObjectStreamProvider implements ObjectStreamProvider {
+    private final Map<Object, Map<Object,Set<Bind>>> binds = new HashMap<>();
+    private final Map<Value,Object> objects = new HashMap<>();
     private final ProxyFactory proxyFactory;
     private final CallContext context;
     private final StreamProvider streamProvider;
@@ -54,7 +59,7 @@ public class DefaultObjectStreamProvider implements ObjectStreamProvider {
 
     @Override
     public <T> T createProxy(T object) {                                                                      //eval
-        return getProxyFactory().createObjectProxy(object,new ContextualHandler<>(object, getContext(),new EvalHandler<>(this)));
+        return getProxyFactory().createObjectProxy(object, new ContextualHandler<>(object, getContext(), new EvalHandler<>(this)));
     }
 
     @Override
@@ -63,18 +68,23 @@ public class DefaultObjectStreamProvider implements ObjectStreamProvider {
     }
 
     @Override
-    public Value value(Evaluator calculator) {
-        return streamProvider.value(calculator);
+    public Value value(Object object, Method method, Object[] parameters) {
+        Value value = streamProvider.value(new MethodEvaluator(object, method, parameters, this));
+        objects.put(value, object);
+
+        return value;
     }
 
     @Override
     public <M> void observe(Value<M> value, ValueObserver<M> observer) {
-        streamProvider.observe(value,observer);
+        streamProvider.observe(value, observer);
     }
 
     @Override
     public void bind(Value parent, Value child) {
-        streamProvider.bind(parent,child);
+        streamProvider.bind(parent, child);
+
+        registerBind(parent, child);
     }
 
     @Override
@@ -88,10 +98,10 @@ public class DefaultObjectStreamProvider implements ObjectStreamProvider {
     }
 
     @Override
-    public Object eval(Object object, Method method, Object[] objects) {
+    public Object eval(Object object, Method method, Object[] parameters) {
         Object res = null;
         if (method.getReturnType() != Void.TYPE) {
-            Value value = value(new MethodEvaluator(object, method, objects, this));   //enhance
+            Value value = value(object, method, parameters);   //enhance
             getContext().getValueStack().push(value);
             getContext().setLastValue(value);
 
@@ -109,11 +119,20 @@ public class DefaultObjectStreamProvider implements ObjectStreamProvider {
 
         } else {
             try {
-                res = method.invoke(object, objects);
-                //If it is writing a property with a primitive type, invalidate the corresponding get value.
-                Value readPropertyValue = findReadPropertyValue(object, method, objects);
+                Value readPropertyValue = findReadPropertyValue(object, method, parameters);
+                Object current = null;
+
+                if (readPropertyValue != null) {
+                    current = readPropertyValue.eval();
+                }
+
+                res = method.invoke(object, parameters);
+
                 if (readPropertyValue != null) {
                     invalidate(readPropertyValue);
+                    if (current != null) {
+                        unbind(object, current);
+                    }
                 }
             } catch (Throwable e) {
                 throw ExceptionUtils.wrap(e);
@@ -128,13 +147,11 @@ public class DefaultObjectStreamProvider implements ObjectStreamProvider {
         try {
             for (PropertyDescriptor propertyDescriptor :
                     Introspector.getBeanInfo(object.getClass(), Object.class).getPropertyDescriptors()) {
-                if (propertyDescriptor.getPropertyType().isPrimitive()) {
-                    Method write = propertyDescriptor.getWriteMethod();
-                    if (write != null && write.equals(method)) {
-                        Method read = propertyDescriptor.getReadMethod();
-                        if (read != null) {
-                            result = value(new MethodEvaluator(object, read, new Object[]{}, this)); //enhance
-                        }
+                Method write = propertyDescriptor.getWriteMethod();
+                if (write != null && write.equals(method)) {
+                    Method read = propertyDescriptor.getReadMethod();
+                    if (read != null && read.getParameterTypes().length == 0) {
+                        result = value(object, read, new Object[]{}); //enhance
                     }
                 }
             }
@@ -142,5 +159,71 @@ public class DefaultObjectStreamProvider implements ObjectStreamProvider {
             throw ExceptionUtils.wrap(e);
         }
         return result;
+    }
+
+    /**
+     * This implementation of the ObjectStreamProvider require to remember every binds at object level in addition
+     * to value level.  This is necessary because we do not have field level dependency management (only method level).
+     * If we replace the value of an Object field, we need to be able to find every binds between the parent and the
+     * child objects to severe them.
+     *
+     * This is not necessary if we implement a class transformer that allows us to intercept field read and write.
+     *
+     * @param parent
+     * @param child
+     */
+    private void registerBind(Value parent, Value child) {
+        Object parentObject = objects.get(parent);
+        Object childObject = objects.get(child);
+        Map<Object,Set<Bind>> children = binds.get(parentObject);
+        if (children == null) {
+            children = new HashMap<>();
+            binds.put(parentObject, children);
+        }
+
+        Set<Bind> parentChildrenBinds = children.get(childObject);
+        if(parentChildrenBinds == null){
+            parentChildrenBinds = new HashSet<>();
+            children.put(childObject,parentChildrenBinds);
+        }
+
+        parentChildrenBinds.add(new Bind(parent,child));
+    }
+
+    /**
+     * This method will unbind a child object from its parent.  It uses the binds registered by the
+     * <code>registerBind()</code> method.
+     * @param parent
+     * @param child
+     */
+    private void unbind(Object parent, Object child) {
+        Map<Object,Set<Bind>> children = binds.get(parent);
+        if(children != null){
+            Set<Bind> parentChildBinds = children.get(child);
+            if(parentChildBinds != null){
+                for(Bind bind : parentChildBinds){
+                    streamProvider.unbind(bind.getParent(), bind.getChild());
+                    streamProvider.invalidate(bind.getParent());
+                }
+            }
+        }
+    }
+
+    private static class Bind {
+        private final Value parent;
+        private final Value child;
+
+        private Bind(Value parent, Value child) {
+            this.parent = parent;
+            this.child = child;
+        }
+
+        private Value getParent() {
+            return parent;
+        }
+
+        private Value getChild() {
+            return child;
+        }
     }
 }

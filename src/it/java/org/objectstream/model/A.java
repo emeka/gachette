@@ -39,6 +39,6 @@ public class A {
     }
 
     public long getResult() {
-        return value + b.getResult();
+        return value + (b != null ? b.getResult() : 0);
     }
 }

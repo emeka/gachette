@@ -23,7 +23,7 @@ public class B {
     private C c;
 
     public long getResult(){
-        return value + c.getValue();
+        return value + (c != null ? c.getValue() : 0);
     }
 
     public C getC() {

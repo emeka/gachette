@@ -146,7 +146,7 @@ public class DefaultObjectStreamProviderTest {
         objectStreamProvider.eval(testObject, objectWriteMethod, new Object[]{object});
 
         assertEquals(object, testObject.getObject());
-        verify(streamProvider, never()).invalidate(any(Value.class));
+        verify(streamProvider, times(1)).invalidate(any(Value.class));
     }
 
     @Test

@@ -83,7 +83,7 @@ public class CollectionStreamProviderTest {
     }
 
     @Test
-    public void testBind() {
+    public void testBindAndUnbind() {
         Value value1 = streamProvider.value(evaluator1);
         Value value2 = streamProvider.value(evaluator2);
         streamProvider.bind(value1, value2);
@@ -91,6 +91,11 @@ public class CollectionStreamProviderTest {
         streamProvider.observe(value1, observer); //should notify value1
 
         streamProvider.notifyChange(value2);  //should not notify value1 as notification does not follow binds
+
+
+        streamProvider.unbind(value1, value2);
+        streamProvider.invalidate(value2); //should not notify value1 after the unbind
+
         verify(observer, times(1)).notify(value1);
     }
 
