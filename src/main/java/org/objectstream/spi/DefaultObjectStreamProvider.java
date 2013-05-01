@@ -21,6 +21,7 @@ package org.objectstream.spi;
 import org.objectstream.context.CallContext;
 import org.objectstream.exceptions.ExceptionUtils;
 import org.objectstream.instrumentation.*;
+import org.objectstream.instrumentation.collections.ObjectStreamCollection;
 import org.objectstream.value.MethodEvaluator;
 import org.objectstream.value.Value;
 import org.objectstream.value.ValueObserver;
@@ -28,10 +29,7 @@ import org.objectstream.value.ValueObserver;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class DefaultObjectStreamProvider implements ObjectStreamProvider {
     private final Map<Integer, Map<Integer, Set<Bind>>> binds = new HashMap<>();
@@ -137,18 +135,20 @@ public class DefaultObjectStreamProvider implements ObjectStreamProvider {
         } else {
             try {
                 Value readPropertyValue = findReadPropertyValue(object, method, parameters);
-                Object current = null;
+                Object oldPropertyValue = null;
+                Object newPropertyValue = null;
 
                 if (readPropertyValue != null) {
-                    current = readPropertyValue.eval();
+                    oldPropertyValue = readPropertyValue.eval();
+                    newPropertyValue = parameters[0];
                 }
 
                 res = method.invoke(object, parameters);
 
-                if (readPropertyValue != null) {
+                if (readPropertyValue != null && oldPropertyValue != newPropertyValue) {
                     invalidate(readPropertyValue);
-                    if (current != null) {
-                        unbind(object, current);
+                    if (oldPropertyValue != null) {
+                        unbind(object, oldPropertyValue);
                     }
                 }
             } catch (Throwable e) {
