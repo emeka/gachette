@@ -19,10 +19,7 @@
 package org.objectstream.context;
 
 
-import org.objectstream.instrumentation.MethodHandler;
 import org.objectstream.value.Value;
-
-import java.util.Stack;
 
 public class ThreadLocalCallContext implements CallContext {
 
@@ -39,22 +36,32 @@ public class ThreadLocalCallContext implements CallContext {
     }
 
     @Override
-    public void setLastValue(Value value) {
-        threadLocalCallContext.get().setLastValue(value);
+    public void push(Value value) {
+        threadLocalCallContext.get().push(value);
     }
 
     @Override
-    public Stack<MethodHandler> getMethodHandlerStack() {
-        return threadLocalCallContext.get().getMethodHandlerStack();
+    public Value peek() {
+        return threadLocalCallContext.get().peek();
     }
 
     @Override
-    public Stack<Value> getValueStack() {
-        return threadLocalCallContext.get().getValueStack();
+    public Value pop() {
+        return threadLocalCallContext.get().pop();
+    }
+
+    @Override
+    public boolean empty() {
+        return threadLocalCallContext.get().empty();
     }
 
     @Override
     public void reset() {
         threadLocalCallContext.get().reset();
+    }
+
+    @Override
+    public int depth() {
+        return threadLocalCallContext.get().depth();
     }
 }

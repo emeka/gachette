@@ -19,5 +19,21 @@
 package org.objectstream.value;
 
 public interface Evaluator<T> {
-    public T eval();
+
+    /**
+     * An Evaluator calculate and return a value.  The returned value depends on the currentValue and a dirty flag.
+     * The Evaluator decides when to recalculate.  Certain evaluator will recalculate even if the dirty flag is false
+     * like for example {@link IteratorEvaluator}.
+     *
+     * @param value The current value to be returned if the evaluator does not need to recalculate anything.
+     * @param dirty True if the current value is dirty.
+     * @return either the currentValue or a new calculated value
+     */
+    T eval(T currentValue, boolean dirty);
+
+    /**
+     *
+     * @return the target object being evaluated
+     */
+    Object targetObject();
 }

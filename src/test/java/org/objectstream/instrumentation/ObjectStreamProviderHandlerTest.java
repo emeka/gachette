@@ -18,19 +18,48 @@
 
 package org.objectstream.instrumentation;
 
-
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.objectstream.spi.ObjectStreamProvider;
+import org.objectstream.spi.ObjectStreamProviderHandler;
 
 import java.lang.reflect.Method;
 
-public class EvalHandler<T> implements MethodHandler {
-    private final ObjectStreamProvider objectStreamProvider;
+import static org.mockito.Mockito.verify;
 
-    public EvalHandler(ObjectStreamProvider stream) {
-        this.objectStreamProvider = stream;
+@RunWith(MockitoJUnitRunner.class)
+public class ObjectStreamProviderHandlerTest {
+
+    private ObjectStreamProviderHandler handler;
+
+    @Mock
+    ObjectStreamProvider objectStreamProvider;
+
+    @Mock
+    Object object, realObject;
+    Object[] parameters;
+    Method method;
+
+    @Before
+    public void setup() throws NoSuchMethodException {
+        handler = new ObjectStreamProviderHandler(realObject,objectStreamProvider);
+        parameters = new Object[]{};
+        method = TestClass.class.getMethod("getValue", null);
     }
 
-    public Object handle(Object object, Method method, Object[] objects) {
-        return objectStreamProvider.eval(object, method, objects);
+    @Test
+    public void testGetPropertyNewValueEmptyValueStack() {
+        handler.handle(object, method, parameters);
+
+        verify(objectStreamProvider).eval(realObject, method, parameters);
+    }
+
+    private static class TestClass {
+        public int getValue() {
+            return 0;
+        }
     }
 }

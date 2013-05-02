@@ -39,8 +39,8 @@ public class ValueTest {
 
     @Before
     public void setup() {
-        when(calculator1.eval()).thenReturn(100);
-        when(calculator2.eval()).thenReturn(200);
+        when(calculator1.eval(anyObject(), anyBoolean())).thenReturn(100);
+        when(calculator2.eval(anyObject(), anyBoolean())).thenReturn(200);
     }
 
     @Test
@@ -56,7 +56,8 @@ public class ValueTest {
         value.setDirty(); //We force one more recalculation
         assertEquals(100, value.eval());
 
-        verify(calculator1, times(2)).eval(); //three calls to value.eval() but only two call to the calculator.eval().
+        verify(calculator1, times(2)).eval(anyObject(), eq(true)); //two calls to value.eval().
+        verify(calculator1, times(1)).eval(anyObject(), eq(false));//one call with dirty=false
     }
 
     @Test

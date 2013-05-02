@@ -22,7 +22,7 @@ import org.objectstream.context.ThreadLocalCallContext;
 import org.objectstream.instrumentation.cglib.CglibProxyFactory;
 import org.objectstream.spi.DefaultObjectStreamProvider;
 import org.objectstream.spi.ObjectStreamProvider;
-import org.objectstream.spi.simple.CollectionStreamProvider;
+import org.objectstream.spi.stream.simple.CollectionStreamProvider;
 
 public class DefaultObjectStreamFactory implements ObjectStreamFactory {
     @Override

@@ -16,49 +16,46 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.value;
+package org.objectstream.model;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-public class Value<M> {
+import java.util.Collection;
 
-    private final Evaluator<M> calculator;
+public class D {
+    private Collection<A> collection;
+    private long value;
 
-    private M value;
-    private boolean dirty = true;
-
-    public Value(Evaluator calculator) {
-        this(calculator, false);
+    public void setValue(long value) {
+        this.value = value;
     }
 
-    public Value(Evaluator calculator, boolean evaluate) {
-        this.calculator = calculator;
-        if (evaluate) {
-            eval();
+    public long getValue() {
+        return this.value;
+    }
+
+    public long getResult() {
+        long result = value;
+        if (collection != null) {
+            for (A a : collection) {
+                result += a.getResult();
+            }
         }
+        return result;
     }
 
-    public boolean isDirty() {
-        return dirty;
+    public Collection<A> getCollection() {
+        return collection;
     }
 
-    public void setDirty() {
-        this.dirty = true;
-    }
-
-    public M getValue() {
-        return value;
-    }
-
-    public M eval() {
-        value = calculator.eval(value, dirty);
-        dirty = false;
-
-        return value;
+    public void setCollection(Collection<A> collection) {
+        this.collection = collection;
     }
 
     @Override
     public int hashCode() {
-        return calculator.hashCode();
+        return new HashCodeBuilder(17, 37).append(value).append(collection).toHashCode();
     }
 
     @Override
@@ -66,12 +63,7 @@ public class Value<M> {
         if (object == this) return true;
         if (object == null) return false;
         if (this.getClass() != object.getClass()) return false;
-        Value other = (Value) object;
-
-        return calculator.equals(other.calculator);
-    }
-
-    public String toString() {
-        return String.format("Value %s = %s (dirty=%s)", calculator, value, dirty);
+        D other = (D) object;
+        return new EqualsBuilder().append(value, other.value).append(collection, other.collection).isEquals();
     }
 }

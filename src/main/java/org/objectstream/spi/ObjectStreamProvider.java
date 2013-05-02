@@ -19,22 +19,12 @@
 package org.objectstream.spi;
 
 import org.objectstream.context.CallContext;
-import org.objectstream.value.Evaluator;
-import org.objectstream.value.Value;
-import org.objectstream.value.ValueObserver;
 
 import java.lang.reflect.Method;
 
 public interface ObjectStreamProvider {
-    Value value(Object object, Method method, Object[] objects);
 
-    <M> void observe(Value<M> value, ValueObserver<M> observer); //
-
-    void bind(Value parent, Value child);
-
-    void invalidate(Value readPropertyValue);
-
-    void notifyChange(Value value);
+    StreamProvider getStreamProvider();
 
     Object eval(Object object, Method method, Object[] objects);
 
@@ -44,5 +34,5 @@ public interface ObjectStreamProvider {
 
     void enhance(Object object);
 
-    int hashCode(Object object);
+    int calculateHashCode(Object object);
 }

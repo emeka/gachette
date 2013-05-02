@@ -16,7 +16,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.spi.simple;
+package org.objectstream.spi.stream.simple;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -55,8 +55,8 @@ public class CollectionStreamProviderTest {
     @Before
     public void setup() {
         streamProvider = new CollectionStreamProvider();
-        when(evaluator1.eval()).thenReturn(null);
-        when(evaluator2.eval()).thenReturn(null);
+        when(evaluator1.eval(anyObject(), anyBoolean())).thenReturn(null);
+        when(evaluator2.eval(anyObject(), anyBoolean())).thenReturn(null);
     }
 
     @Test

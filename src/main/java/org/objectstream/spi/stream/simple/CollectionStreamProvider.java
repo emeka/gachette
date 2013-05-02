@@ -16,7 +16,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.spi.simple;
+package org.objectstream.spi.stream.simple;
 
 
 import org.objectstream.spi.StreamProvider;

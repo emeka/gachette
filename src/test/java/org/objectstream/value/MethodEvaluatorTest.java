@@ -48,25 +48,19 @@ public class MethodEvaluatorTest {
         target = new TestClass();
         primitiveReadMethod = TestClass.class.getMethod("getPrimitive", null);
         primitiveWriteMethod = TestClass.class.getMethod("setPrimitive", Integer.TYPE);
-        when(objectStreamProvider.hashCode(any(Object.class))).thenReturn(1111);
+        when(objectStreamProvider.calculateHashCode(any(Object.class))).thenReturn(1111);
     }
 
     @Test
     public void test() throws NoSuchMethodException {
         methodEvaluator = new MethodEvaluator(target, primitiveWriteMethod, new Object[]{new Integer(10)}, objectStreamProvider);
-        assertNull(methodEvaluator.eval());
+        assertNull(methodEvaluator.eval(null, true));
         assertEquals(10, target.getPrimitive());
 
         methodEvaluator = new MethodEvaluator(target, primitiveReadMethod, null, objectStreamProvider);
-        assertEquals(10, methodEvaluator.eval());
+        assertEquals(10, methodEvaluator.eval(null, true));
 
         verify(objectStreamProvider, times(2)).enhance(target);
-    }
-
-    @Test
-    public void testToString() {
-        methodEvaluator = new MethodEvaluator(target, primitiveWriteMethod, new Object[]{new Integer(10)}, objectStreamProvider);
-        assertTrue(methodEvaluator.toString().startsWith("Method("));
     }
 
     @Test
@@ -84,8 +78,8 @@ public class MethodEvaluatorTest {
 
         MethodEvaluator methodEvaluator1 = new MethodEvaluator(target, primitiveWriteMethod, new Object[]{new Integer(10)}, objectStreamProvider);
         MethodEvaluator methodEvaluator2 = new MethodEvaluator(otherTarget, primitiveWriteMethod, new Object[]{new Integer(10)}, objectStreamProvider);
-        when(objectStreamProvider.hashCode(target)).thenReturn(1111);
-        when(objectStreamProvider.hashCode(otherTarget)).thenReturn(2222);
+        when(objectStreamProvider.calculateHashCode(target)).thenReturn(1111);
+        when(objectStreamProvider.calculateHashCode(otherTarget)).thenReturn(2222);
 
         assertNotEquals(methodEvaluator1.hashCode(), methodEvaluator2.hashCode());
         assertNotEquals(methodEvaluator1, methodEvaluator2);
@@ -109,6 +103,11 @@ public class MethodEvaluatorTest {
         assertNotEquals(methodEvaluator1, methodEvaluator4);
     }
 
+    @Test
+    public void testToString() {
+        methodEvaluator = new MethodEvaluator(target, primitiveWriteMethod, new Object[]{new Integer(10)}, objectStreamProvider);
+        assertTrue(methodEvaluator.toString().startsWith("Method("));
+    }
 
     private static class TestClass {
         private int primitive;

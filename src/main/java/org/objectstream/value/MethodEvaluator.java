@@ -41,7 +41,12 @@ public class MethodEvaluator<T> implements Evaluator<T> {
     }
 
     @Override
-    public T eval() {
+    public T eval(T current, boolean dirty) {
+
+        if(!dirty){
+            return current;
+        }
+
         objectStreamProvider.enhance(object);
 
         T result;
@@ -57,12 +62,17 @@ public class MethodEvaluator<T> implements Evaluator<T> {
     }
 
     @Override
+    public Object targetObject() {
+        return object;
+    }
+
+    @Override
     public int hashCode() {
-        //We use ProxyUtils.hashCode because the object hash code should not change if the object field values change.
+        //We use ProxyUtils.calculateHashCode because the object hash code should not change if the object field values change.
         //A MethodEvaluator should return the same hash code if calling the same method on the same object with the
         //same parameters.  This will cause problem when we are using a distributed solution spanning several VM as we
         //want to be able to send value update cross VM.  We will certainly need an id as Hibernate does.
-        return new HashCodeBuilder().append(objectStreamProvider.hashCode(object)).append(method).append(parameters).toHashCode();
+        return new HashCodeBuilder().append(objectStreamProvider.calculateHashCode(object)).append(method).append(parameters).toHashCode();
     }
 
     @Override
@@ -73,7 +83,7 @@ public class MethodEvaluator<T> implements Evaluator<T> {
         MethodEvaluator other = (MethodEvaluator) otherObject;
 
         return new EqualsBuilder()
-                .append(objectStreamProvider.hashCode(object),objectStreamProvider.hashCode(other.object))
+                .append(objectStreamProvider.calculateHashCode(object),objectStreamProvider.calculateHashCode(other.object))
                 .append(method, other.method)
                 .append(parameters, other.parameters).isEquals();
     }
