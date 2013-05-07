@@ -20,6 +20,7 @@ package org.objectstream.spi;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.objectstream.Stream;
 import org.objectstream.context.CallContext;
 import org.objectstream.exceptions.ExceptionUtils;
 import org.objectstream.instrumentation.*;
@@ -358,6 +359,11 @@ public class DefaultObjectStreamProvider implements ObjectStreamProvider {
         @Override
         public void notifyChange(Value value) {
             streamBuilder.notifyChange(value);
+        }
+
+        @Override
+        public Stream getStream() {
+            return null;  //To change body of implemented methods use File | Settings | File Templates.
         }
     }
 }

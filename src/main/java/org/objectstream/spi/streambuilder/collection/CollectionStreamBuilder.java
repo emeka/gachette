@@ -19,6 +19,7 @@
 package org.objectstream.spi.streambuilder.collection;
 
 
+import org.objectstream.Stream;
 import org.objectstream.spi.StreamBuilder;
 import org.objectstream.value.Evaluator;
 import org.objectstream.value.Value;
@@ -116,6 +117,11 @@ Object o = cons.newInstance("JLabel");
                 observer.notify(value);
             }
         }
+    }
+
+    @Override
+    public Stream getStream() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
