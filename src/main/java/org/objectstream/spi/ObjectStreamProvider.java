@@ -24,7 +24,7 @@ import java.lang.reflect.Method;
 
 public interface ObjectStreamProvider {
 
-    StreamProvider getStreamProvider();
+    StreamBuilder getStreamBuilder();
 
     Object eval(Object object, Method method, Object[] objects);
 

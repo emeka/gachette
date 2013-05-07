@@ -16,22 +16,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.spi;
+package org.objectstream.spi.callprocessor;
 
-import org.objectstream.value.Evaluator;
-import org.objectstream.value.Value;
-import org.objectstream.value.ValueObserver;
-
-public interface StreamProvider {
-    Value value(Evaluator calculator);
-
-    <M> void observe(Value<M> value, ValueObserver<M> observer); //
-
-    void bind(Value parent, Value child);
-
-    void unbind(Value parent, Value child);
-
-    void invalidate(Value readPropertyValue);
-
-    void notifyChange(Value value);
+public interface CallProcessor {
+    <T> T construct(T object);
 }

@@ -40,12 +40,12 @@ public class DefaultObjectStreamProvider implements ObjectStreamProvider {
     private final Map<Integer, Set<Value>> values = new HashMap<>();
     private final ProxyFactory proxyFactory;
     private final CallContext context;
-    private final StreamProvider streamProvider;
+    private final StreamBuilder streamBuilder;
 
-    public DefaultObjectStreamProvider(StreamProvider streamProvider, ProxyFactory proxyFactory, CallContext context) {
+    public DefaultObjectStreamProvider(StreamBuilder streamBuilder, ProxyFactory proxyFactory, CallContext context) {
         this.context = context;
         this.proxyFactory = proxyFactory;
-        this.streamProvider = new StreamProviderWrapper(streamProvider);
+        this.streamBuilder = new StreamBuilderWrapper(streamBuilder);
     }
 
     public ProxyFactory getProxyFactory() {
@@ -84,8 +84,8 @@ public class DefaultObjectStreamProvider implements ObjectStreamProvider {
     }
 
     @Override
-    public StreamProvider getStreamProvider() {
-        return streamProvider;
+    public StreamBuilder getStreamBuilder() {
+        return streamBuilder;
     }
 
     @Override
@@ -107,7 +107,7 @@ public class DefaultObjectStreamProvider implements ObjectStreamProvider {
         if (isValue(method)) {
             //here, the same value must be returned for the same parameters unless invalidated
             //We talking about value in the sense of functional programming (no side effects)
-            Value value = streamProvider.value(new MethodEvaluator(object, method, parameters, this));   //enhance
+            Value value = streamBuilder.value(new MethodEvaluator(object, method, parameters, this));   //enhance
             getContext().push(value);
 
             Object oldValue = value.getValue();
@@ -115,11 +115,11 @@ public class DefaultObjectStreamProvider implements ObjectStreamProvider {
 
             getContext().pop();
             if (!getContext().empty()) {
-                streamProvider.bind(getContext().peek(), value);
+                streamBuilder.bind(getContext().peek(), value);
             }
 
             if (!res.equals(oldValue)) {
-                streamProvider.notifyChange(value);
+                streamBuilder.notifyChange(value);
             }
 
         } else {
@@ -145,7 +145,7 @@ public class DefaultObjectStreamProvider implements ObjectStreamProvider {
                 res = method.invoke(object, parameters);
                                                   //optimisation for properties
                 if (readPropertyValue != null && oldPropertyValue != newPropertyValue) {
-                    streamProvider.invalidate(readPropertyValue);
+                    streamBuilder.invalidate(readPropertyValue);
                     if (oldPropertyValue != null) {
                         //Remove oldPropertyValue dependencies and any children dependencies in case of collection
                         unbind(object, oldPropertyValue);
@@ -184,7 +184,7 @@ public class DefaultObjectStreamProvider implements ObjectStreamProvider {
                 if (write != null && write.equals(method)) {
                     Method read = propertyDescriptor.getReadMethod();
                     if (read != null && read.getParameterTypes().length == 0) {
-                        result = streamProvider.value(new MethodEvaluator(object, read, new Object[]{}, this)); //enhance
+                        result = streamBuilder.value(new MethodEvaluator(object, read, new Object[]{}, this)); //enhance
                     }
                 }
             }
@@ -255,8 +255,8 @@ public class DefaultObjectStreamProvider implements ObjectStreamProvider {
             Set<Bind> parentChildBinds = children.get(childHash);
             if (parentChildBinds != null) {
                 for (Bind bind : parentChildBinds) {
-                    streamProvider.unbind(bind.getParent(), bind.getChild());
-                    streamProvider.invalidate(bind.getParent());
+                    streamBuilder.unbind(bind.getParent(), bind.getChild());
+                    streamBuilder.invalidate(bind.getParent());
                 }
             }
         }
@@ -273,7 +273,7 @@ public class DefaultObjectStreamProvider implements ObjectStreamProvider {
         Set<Value> objectValues = values.get(calculateHashCode(object));
         if (objectValues != null) {
             for (Value value : objectValues) {
-                streamProvider.invalidate(value);
+                streamBuilder.invalidate(value);
             }
         }
     }
@@ -311,16 +311,16 @@ public class DefaultObjectStreamProvider implements ObjectStreamProvider {
 
     }
 
-    private class StreamProviderWrapper implements StreamProvider {
-        private final StreamProvider streamProvider;
+    private class StreamBuilderWrapper implements StreamBuilder {
+        private final StreamBuilder streamBuilder;
 
-        private StreamProviderWrapper(StreamProvider streamProvider) {
-            this.streamProvider = streamProvider;
+        private StreamBuilderWrapper(StreamBuilder streamBuilder) {
+            this.streamBuilder = streamBuilder;
         }
 
         @Override
         public Value value(Evaluator evaluator) {
-            Value value = streamProvider.value(evaluator);
+            Value value = streamBuilder.value(evaluator);
             Integer objectHash = calculateHashCode(evaluator.targetObject());
             objects.put(value, objectHash);
             Set<Value> objectValues = values.get(objectHash);
@@ -334,30 +334,30 @@ public class DefaultObjectStreamProvider implements ObjectStreamProvider {
 
         @Override
         public <M> void observe(Value<M> value, ValueObserver<M> observer) {
-            streamProvider.observe(value, observer);
+            streamBuilder.observe(value, observer);
         }
 
         @Override
         public void bind(Value parent, Value child) {
-            streamProvider.bind(parent, child);
+            streamBuilder.bind(parent, child);
 
             registerBind(parent, child);
         }
 
         @Override
         public void unbind(Value parent, Value child) {
-            streamProvider.unbind(parent, child);
+            streamBuilder.unbind(parent, child);
             unRegisterBind(parent, child);
         }
 
         @Override
         public void invalidate(Value readPropertyValue) {
-            streamProvider.invalidate(readPropertyValue);
+            streamBuilder.invalidate(readPropertyValue);
         }
 
         @Override
         public void notifyChange(Value value) {
-            streamProvider.notifyChange(value);
+            streamBuilder.notifyChange(value);
         }
     }
 }

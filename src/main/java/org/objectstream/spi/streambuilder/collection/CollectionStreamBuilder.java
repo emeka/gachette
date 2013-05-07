@@ -16,10 +16,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.spi.stream.simple;
+package org.objectstream.spi.streambuilder.collection;
 
 
-import org.objectstream.spi.StreamProvider;
+import org.objectstream.spi.StreamBuilder;
 import org.objectstream.value.Evaluator;
 import org.objectstream.value.Value;
 import org.objectstream.value.ValueObserver;
@@ -29,7 +29,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class CollectionStreamProvider implements StreamProvider {
+public class CollectionStreamBuilder implements StreamBuilder {
 
     private final Set<Value> nodes = new HashSet<>();
     private final Map<Evaluator, Value> nodeMap = new HashMap<>();

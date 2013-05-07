@@ -141,13 +141,13 @@ public class ObjectStreamCollection<E> implements ObjectStreamProxy, Collection<
 
     private void invalidateParentValues(){
         for(Value parent : parents){
-            objectStreamProvider.getStreamProvider().invalidate(parent);
+            objectStreamProvider.getStreamBuilder().invalidate(parent);
         }
     }
 
     private Collection<E> findOriginalCollection(Collection<E> inputCollection){
         if(inputCollection instanceof ObjectStreamCollection){
-            return findOriginalCollection(((ObjectStreamCollection)inputCollection).getOriginalObject());
+            return findOriginalCollection(((ObjectStreamCollection) inputCollection).getOriginalObject());
         } else {
             return inputCollection;
         }

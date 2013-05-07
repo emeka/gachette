@@ -16,22 +16,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.api;
+package org.objectstream.instrumentation;
 
-import org.objectstream.spi.ObjectStreamProvider;
-import org.objectstream.value.Value;
-import org.objectstream.value.ValueObserver;
-
-public class FluentObserveWith {
-    private final ObjectStreamProvider objectStreamProvider;
-    private final Value value;
-    
-    public FluentObserveWith(ObjectStreamProvider objectStreamProvider, Value value){
-        this.objectStreamProvider = objectStreamProvider;
-        this.value = value;
-    }
-    
-    public void with(ValueObserver observer) {
-        objectStreamProvider.getStreamBuilder().observe(value, observer);
-    }
+public interface ClassTransformer {
 }

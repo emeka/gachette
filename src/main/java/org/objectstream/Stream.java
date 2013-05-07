@@ -16,22 +16,31 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.api;
+package org.objectstream;
 
-import org.objectstream.spi.ObjectStreamProvider;
-import org.objectstream.value.Value;
-import org.objectstream.value.ValueObserver;
+import org.objectstream.api.FluentObserveValue;
 
-public class FluentObserveWith {
-    private final ObjectStreamProvider objectStreamProvider;
-    private final Value value;
-    
-    public FluentObserveWith(ObjectStreamProvider objectStreamProvider, Value value){
-        this.objectStreamProvider = objectStreamProvider;
-        this.value = value;
-    }
-    
-    public void with(ValueObserver observer) {
-        objectStreamProvider.getStreamBuilder().observe(value, observer);
-    }
+public interface Stream {
+
+    /**
+     * The ObjectStream.observe command will all an observer to a value using a fluent interface.
+     *
+     * Example: stream.observe().value(a.getResult()).with(observer)
+     *
+     * where a is a proxied stream object which has been created using stream.object() and
+     *       observer is a {@link org.objectstream.value.ValueObserver} object.
+     *
+     * @return the FluentObserveValue object used in the fluent api.
+     */
+    FluentObserveValue observe();
+
+
+    /**
+     *
+     * @param object
+     * @param <T>
+     * @return
+     */
+    <T> T invoke(T object);
+
 }
