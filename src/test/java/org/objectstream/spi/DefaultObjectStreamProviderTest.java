@@ -29,6 +29,7 @@ import org.objectstream.context.CallContext;
 import org.objectstream.context.DefaultCallContext;
 import org.objectstream.instrumentation.ObjectStreamProxy;
 import org.objectstream.instrumentation.ProxyFactory;
+import org.objectstream.spi.graphprovider.GraphProvider;
 import org.objectstream.value.Evaluator;
 import org.objectstream.value.Value;
 
@@ -43,7 +44,7 @@ public class DefaultObjectStreamProviderTest {
     ObjectStreamProvider objectStreamProvider;
 
     @Mock
-    StreamBuilder streamBuilder;
+    GraphProvider graphProvider;
 
     @Mock
     ProxyFactory proxyFactory;
@@ -67,7 +68,7 @@ public class DefaultObjectStreamProviderTest {
     @Before
     public void setup() throws NoSuchMethodException {
         context = new DefaultCallContext(){};
-        objectStreamProvider = new DefaultObjectStreamProvider(streamBuilder, proxyFactory, context);
+        objectStreamProvider = new DefaultObjectStreamProvider(graphProvider, proxyFactory, context);
 
         primitiveReadMethod = TestClass.class.getMethod("getPrimitive", null);
         primitiveWriteMethod = TestClass.class.getMethod("setPrimitive", Integer.TYPE);
@@ -79,7 +80,7 @@ public class DefaultObjectStreamProviderTest {
         equalsMethod = TestClass.class.getMethod("equals", Object.class);
         getOriginalObjectMethod = TestClass.class.getMethod("getOriginalObject", null);
 
-        when(streamBuilder.value(any(Evaluator.class))).thenReturn(value);
+        when(graphProvider.value(any(Evaluator.class))).thenReturn(value);
         when(value.getValue()).thenReturn(oldValue);
         when(value.eval()).thenReturn(newValue);
 
@@ -100,8 +101,8 @@ public class DefaultObjectStreamProviderTest {
         objectStreamProvider.eval(object, primitiveReadMethod, parameters);
 
         assertTrue(context.empty());
-        verify(streamBuilder).notifyChange(value);
-        verify(streamBuilder, never()).bind(any(Value.class), any(Value.class));
+        verify(graphProvider).notifyChange(value);
+        verify(graphProvider, never()).bind(any(Value.class), any(Value.class));
     }
 
     @Test
@@ -111,8 +112,8 @@ public class DefaultObjectStreamProviderTest {
         objectStreamProvider.eval(object, primitiveReadMethod, parameters);
 
         assertTrue(context.empty());
-        verify(streamBuilder, never()).notifyChange(any(Value.class));
-        verify(streamBuilder, never()).bind(any(Value.class), any(Value.class));
+        verify(graphProvider, never()).notifyChange(any(Value.class));
+        verify(graphProvider, never()).bind(any(Value.class), any(Value.class));
     }
 
     @Test
@@ -125,8 +126,8 @@ public class DefaultObjectStreamProviderTest {
         assertEquals(1, context.depth());
         assertEquals(parentValue, context.peek());
 
-        verify(streamBuilder).notifyChange(value);
-        verify(streamBuilder).bind(parentValue, value);
+        verify(graphProvider).notifyChange(value);
+        verify(graphProvider).bind(parentValue, value);
     }
 
     @Test
@@ -135,8 +136,8 @@ public class DefaultObjectStreamProviderTest {
         objectStreamProvider.eval(object, nonVoidMethod, parameters);
 
         assertTrue(context.empty());
-        verify(streamBuilder).notifyChange(value);
-        verify(streamBuilder, never()).bind(any(Value.class), any(Value.class));
+        verify(graphProvider).notifyChange(value);
+        verify(graphProvider, never()).bind(any(Value.class), any(Value.class));
     }
 
     @Test
@@ -144,7 +145,7 @@ public class DefaultObjectStreamProviderTest {
         objectStreamProvider.eval(testObject, primitiveWriteMethod, new Object[]{new Integer(33)});
 
         assertEquals(33, testObject.getPrimitive());
-        verify(streamBuilder).invalidate(any(Value.class));
+        verify(graphProvider).invalidate(any(Value.class));
     }
 
     @Test
@@ -153,7 +154,7 @@ public class DefaultObjectStreamProviderTest {
         objectStreamProvider.eval(testObject, objectWriteMethod, new Object[]{object});
 
         assertEquals(object, testObject.getObject());
-        verify(streamBuilder, times(1)).invalidate(any(Value.class));
+        verify(graphProvider, times(1)).invalidate(any(Value.class));
     }
 
     @Test
@@ -161,7 +162,7 @@ public class DefaultObjectStreamProviderTest {
         objectStreamProvider.eval(testObject, voidMethod, new Object[]{new Integer(11)});
 
         assertEquals(11, testObject.state());
-        verify(streamBuilder, never()).invalidate(any(Value.class));
+        verify(graphProvider, never()).invalidate(any(Value.class));
     }
 
     @Test
@@ -169,19 +170,19 @@ public class DefaultObjectStreamProviderTest {
         int hashCode = (Integer) objectStreamProvider.eval(testObject, hashCodeMethod, new Object[]{});
 
         assertEquals(testObject.hashCode(), hashCode);
-        verify(streamBuilder, never()).value(any(Evaluator.class));
+        verify(graphProvider, never()).value(any(Evaluator.class));
     }
 
     @Test
     public void testInvokeEquals() {
         assertTrue((Boolean) objectStreamProvider.eval(testObject, equalsMethod, new Object[]{testObject}));
-        verify(streamBuilder, never()).value(any(Evaluator.class));
+        verify(graphProvider, never()).value(any(Evaluator.class));
     }
 
     @Test
     public void testInvokeGetOriginalObject() {
         assertSame(testObject, objectStreamProvider.eval(testObject, getOriginalObjectMethod, new Object[]{}));
-        verify(streamBuilder, never()).value(any(Evaluator.class));
+        verify(graphProvider, never()).value(any(Evaluator.class));
     }
 
     private static class TestClass {

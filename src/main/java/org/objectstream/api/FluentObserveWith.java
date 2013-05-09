@@ -32,6 +32,6 @@ public class FluentObserveWith {
     }
     
     public void with(ValueObserver observer) {
-        objectStreamProvider.getStreamBuilder().observe(value, observer);
+        objectStreamProvider.getGraphProvider().observe(value, observer);
     }
 }

@@ -18,6 +18,18 @@
 
 package org.objectstream.spi.callprocessor;
 
+import org.objectstream.context.CallContext;
+
+import java.lang.reflect.Method;
+
 public interface CallProcessor {
-    <T> T construct(T object);
+    Object eval(Object object, Method method, Object[] objects);
+
+    CallContext getContext();  //api
+
+    <T> T createProxy(T object);   //api
+
+    void enhance(Object object);
+
+    int calculateHashCode(Object object);
 }

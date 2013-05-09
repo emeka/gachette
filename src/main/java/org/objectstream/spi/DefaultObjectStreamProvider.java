@@ -25,6 +25,7 @@ import org.objectstream.context.CallContext;
 import org.objectstream.exceptions.ExceptionUtils;
 import org.objectstream.instrumentation.*;
 import org.objectstream.instrumentation.collections.ObjectStreamCollection;
+import org.objectstream.spi.graphprovider.GraphProvider;
 import org.objectstream.value.Evaluator;
 import org.objectstream.value.MethodEvaluator;
 import org.objectstream.value.Value;
@@ -41,12 +42,12 @@ public class DefaultObjectStreamProvider implements ObjectStreamProvider {
     private final Map<Integer, Set<Value>> values = new HashMap<>();
     private final ProxyFactory proxyFactory;
     private final CallContext context;
-    private final StreamBuilder streamBuilder;
+    private final GraphProvider graphProvider;
 
-    public DefaultObjectStreamProvider(StreamBuilder streamBuilder, ProxyFactory proxyFactory, CallContext context) {
+    public DefaultObjectStreamProvider(GraphProvider graphProvider, ProxyFactory proxyFactory, CallContext context) {
         this.context = context;
         this.proxyFactory = proxyFactory;
-        this.streamBuilder = new StreamBuilderWrapper(streamBuilder);
+        this.graphProvider = new GraphProviderWrapper(graphProvider);
     }
 
     public ProxyFactory getProxyFactory() {
@@ -85,8 +86,8 @@ public class DefaultObjectStreamProvider implements ObjectStreamProvider {
     }
 
     @Override
-    public StreamBuilder getStreamBuilder() {
-        return streamBuilder;
+    public GraphProvider getGraphProvider() {
+        return graphProvider;
     }
 
     @Override
@@ -108,7 +109,7 @@ public class DefaultObjectStreamProvider implements ObjectStreamProvider {
         if (isValue(method)) {
             //here, the same value must be returned for the same parameters unless invalidated
             //We talking about value in the sense of functional programming (no side effects)
-            Value value = streamBuilder.value(new MethodEvaluator(object, method, parameters, this));   //enhance
+            Value value = graphProvider.value(new MethodEvaluator(object, method, parameters, this));   //enhance
             getContext().push(value);
 
             Object oldValue = value.getValue();
@@ -116,11 +117,11 @@ public class DefaultObjectStreamProvider implements ObjectStreamProvider {
 
             getContext().pop();
             if (!getContext().empty()) {
-                streamBuilder.bind(getContext().peek(), value);
+                graphProvider.bind(getContext().peek(), value);
             }
 
             if (!res.equals(oldValue)) {
-                streamBuilder.notifyChange(value);
+                graphProvider.notifyChange(value);
             }
 
         } else {
@@ -146,7 +147,7 @@ public class DefaultObjectStreamProvider implements ObjectStreamProvider {
                 res = method.invoke(object, parameters);
                                                   //optimisation for properties
                 if (readPropertyValue != null && oldPropertyValue != newPropertyValue) {
-                    streamBuilder.invalidate(readPropertyValue);
+                    graphProvider.invalidate(readPropertyValue);
                     if (oldPropertyValue != null) {
                         //Remove oldPropertyValue dependencies and any children dependencies in case of collection
                         unbind(object, oldPropertyValue);
@@ -185,7 +186,7 @@ public class DefaultObjectStreamProvider implements ObjectStreamProvider {
                 if (write != null && write.equals(method)) {
                     Method read = propertyDescriptor.getReadMethod();
                     if (read != null && read.getParameterTypes().length == 0) {
-                        result = streamBuilder.value(new MethodEvaluator(object, read, new Object[]{}, this)); //enhance
+                        result = graphProvider.value(new MethodEvaluator(object, read, new Object[]{}, this)); //enhance
                     }
                 }
             }
@@ -256,8 +257,8 @@ public class DefaultObjectStreamProvider implements ObjectStreamProvider {
             Set<Bind> parentChildBinds = children.get(childHash);
             if (parentChildBinds != null) {
                 for (Bind bind : parentChildBinds) {
-                    streamBuilder.unbind(bind.getParent(), bind.getChild());
-                    streamBuilder.invalidate(bind.getParent());
+                    graphProvider.unbind(bind.getParent(), bind.getChild());
+                    graphProvider.invalidate(bind.getParent());
                 }
             }
         }
@@ -274,7 +275,7 @@ public class DefaultObjectStreamProvider implements ObjectStreamProvider {
         Set<Value> objectValues = values.get(calculateHashCode(object));
         if (objectValues != null) {
             for (Value value : objectValues) {
-                streamBuilder.invalidate(value);
+                graphProvider.invalidate(value);
             }
         }
     }
@@ -312,16 +313,16 @@ public class DefaultObjectStreamProvider implements ObjectStreamProvider {
 
     }
 
-    private class StreamBuilderWrapper implements StreamBuilder {
-        private final StreamBuilder streamBuilder;
+    private class GraphProviderWrapper implements GraphProvider {
+        private final GraphProvider graphProvider;
 
-        private StreamBuilderWrapper(StreamBuilder streamBuilder) {
-            this.streamBuilder = streamBuilder;
+        private GraphProviderWrapper(GraphProvider graphProvider) {
+            this.graphProvider = graphProvider;
         }
 
         @Override
         public Value value(Evaluator evaluator) {
-            Value value = streamBuilder.value(evaluator);
+            Value value = graphProvider.value(evaluator);
             Integer objectHash = calculateHashCode(evaluator.targetObject());
             objects.put(value, objectHash);
             Set<Value> objectValues = values.get(objectHash);
@@ -335,30 +336,30 @@ public class DefaultObjectStreamProvider implements ObjectStreamProvider {
 
         @Override
         public <M> void observe(Value<M> value, ValueObserver<M> observer) {
-            streamBuilder.observe(value, observer);
+            graphProvider.observe(value, observer);
         }
 
         @Override
         public void bind(Value parent, Value child) {
-            streamBuilder.bind(parent, child);
+            graphProvider.bind(parent, child);
 
             registerBind(parent, child);
         }
 
         @Override
         public void unbind(Value parent, Value child) {
-            streamBuilder.unbind(parent, child);
+            graphProvider.unbind(parent, child);
             unRegisterBind(parent, child);
         }
 
         @Override
         public void invalidate(Value readPropertyValue) {
-            streamBuilder.invalidate(readPropertyValue);
+            graphProvider.invalidate(readPropertyValue);
         }
 
         @Override
         public void notifyChange(Value value) {
-            streamBuilder.notifyChange(value);
+            graphProvider.notifyChange(value);
         }
 
         @Override

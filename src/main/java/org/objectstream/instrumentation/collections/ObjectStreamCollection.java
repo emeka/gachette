@@ -141,7 +141,7 @@ public class ObjectStreamCollection<E> implements ObjectStreamProxy, Collection<
 
     private void invalidateParentValues(){
         for(Value parent : parents){
-            objectStreamProvider.getStreamBuilder().invalidate(parent);
+            objectStreamProvider.getGraphProvider().invalidate(parent);
         }
     }
 

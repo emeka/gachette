@@ -25,7 +25,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.objectstream.context.CallContext;
 import org.objectstream.instrumentation.ProxyFactory;
-import org.objectstream.spi.streambuilder.collection.CollectionStreamBuilder;
+import org.objectstream.spi.graphprovider.collection.CollectionGraphProvider;
 import org.objectstream.value.Evaluator;
 import org.objectstream.value.Value;
 import org.objectstream.value.ValueObserver;
@@ -36,7 +36,7 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class CollectionStreamProviderTest {
 
-    private CollectionStreamBuilder streamProvider;
+    private CollectionGraphProvider streamProvider;
 
     @Mock
     ProxyFactory proxyFactory;
@@ -55,7 +55,7 @@ public class CollectionStreamProviderTest {
 
     @Before
     public void setup() {
-        streamProvider = new CollectionStreamBuilder();
+        streamProvider = new CollectionGraphProvider();
         when(evaluator1.eval(anyObject(), anyBoolean())).thenReturn(null);
         when(evaluator2.eval(anyObject(), anyBoolean())).thenReturn(null);
     }

@@ -16,14 +16,14 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.spi;
+package org.objectstream.spi.graphprovider;
 
 import org.objectstream.Stream;
 import org.objectstream.value.Evaluator;
 import org.objectstream.value.Value;
 import org.objectstream.value.ValueObserver;
 
-public interface StreamBuilder {
+public interface GraphProvider {
     Value value(Evaluator calculator);
 
     <M> void observe(Value<M> value, ValueObserver<M> observer); //

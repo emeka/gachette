@@ -16,11 +16,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.spi.streambuilder.collection;
+package org.objectstream.spi.graphprovider.collection;
 
 
 import org.objectstream.Stream;
-import org.objectstream.spi.StreamBuilder;
+import org.objectstream.spi.graphprovider.GraphProvider;
 import org.objectstream.value.Evaluator;
 import org.objectstream.value.Value;
 import org.objectstream.value.ValueObserver;
@@ -30,7 +30,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class CollectionStreamBuilder implements StreamBuilder {
+public class CollectionGraphProvider implements GraphProvider {
 
     private final Set<Value> nodes = new HashSet<>();
     private final Map<Evaluator, Value> nodeMap = new HashMap<>();

@@ -19,12 +19,13 @@
 package org.objectstream.spi;
 
 import org.objectstream.context.CallContext;
+import org.objectstream.spi.graphprovider.GraphProvider;
 
 import java.lang.reflect.Method;
 
 public interface ObjectStreamProvider {
 
-    StreamBuilder getStreamBuilder();
+    GraphProvider getGraphProvider();
 
     Object eval(Object object, Method method, Object[] objects);
 

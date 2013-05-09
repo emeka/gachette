@@ -22,13 +22,13 @@ import org.objectstream.context.ThreadLocalCallContext;
 import org.objectstream.instrumentation.cglib.CglibProxyFactory;
 import org.objectstream.spi.DefaultObjectStreamProvider;
 import org.objectstream.spi.ObjectStreamProvider;
-import org.objectstream.spi.streambuilder.collection.CollectionStreamBuilder;
+import org.objectstream.spi.graphprovider.collection.CollectionGraphProvider;
 
 public class DefaultObjectStreamFactory implements ObjectStreamFactory {
     @Override
     public ObjectStream create(){
         CglibProxyFactory proxyFactory = new CglibProxyFactory();
-        CollectionStreamBuilder streamProvider = new CollectionStreamBuilder();
+        CollectionGraphProvider streamProvider = new CollectionGraphProvider();
         ObjectStreamProvider objectStreamProvider = new DefaultObjectStreamProvider(streamProvider,proxyFactory,new ThreadLocalCallContext());
         DefaultObjectStream objectStream = new DefaultObjectStream(objectStreamProvider);
         return objectStream;
