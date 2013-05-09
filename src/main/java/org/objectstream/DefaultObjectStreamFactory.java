@@ -20,17 +20,17 @@ package org.objectstream;
 
 import org.objectstream.context.ThreadLocalCallContext;
 import org.objectstream.instrumentation.cglib.CglibProxyFactory;
-import org.objectstream.spi.DefaultObjectStreamProvider;
-import org.objectstream.spi.ObjectStreamProvider;
+import org.objectstream.spi.callprocessor.CallProcessor;
+import org.objectstream.spi.callprocessor.DefaultCallProcessor;
 import org.objectstream.spi.graphprovider.collection.CollectionGraphProvider;
 
 public class DefaultObjectStreamFactory implements ObjectStreamFactory {
     @Override
     public ObjectStream create(){
         CglibProxyFactory proxyFactory = new CglibProxyFactory();
-        CollectionGraphProvider streamProvider = new CollectionGraphProvider();
-        ObjectStreamProvider objectStreamProvider = new DefaultObjectStreamProvider(streamProvider,proxyFactory,new ThreadLocalCallContext());
-        DefaultObjectStream objectStream = new DefaultObjectStream(objectStreamProvider);
+        CollectionGraphProvider graphProvider = new CollectionGraphProvider();
+        CallProcessor callProcessor = new DefaultCallProcessor(graphProvider, proxyFactory, new ThreadLocalCallContext());
+        DefaultObjectStream objectStream = new DefaultObjectStream(callProcessor, graphProvider);
         return objectStream;
     }
 }

@@ -23,8 +23,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.objectstream.spi.ObjectStreamProvider;
 import org.objectstream.spi.ObjectStreamProviderHandler;
+import org.objectstream.spi.callprocessor.CallProcessor;
 
 import java.lang.reflect.Method;
 
@@ -36,7 +36,7 @@ public class ObjectStreamProviderHandlerTest {
     private ObjectStreamProviderHandler handler;
 
     @Mock
-    ObjectStreamProvider objectStreamProvider;
+    CallProcessor callProcessor;
 
     @Mock
     Object object, realObject;
@@ -45,7 +45,7 @@ public class ObjectStreamProviderHandlerTest {
 
     @Before
     public void setup() throws NoSuchMethodException {
-        handler = new ObjectStreamProviderHandler(realObject,objectStreamProvider);
+        handler = new ObjectStreamProviderHandler(realObject, callProcessor);
         parameters = new Object[]{};
         method = TestClass.class.getMethod("getValue", null);
     }
@@ -54,7 +54,7 @@ public class ObjectStreamProviderHandlerTest {
     public void testGetPropertyNewValueEmptyValueStack() {
         handler.handle(object, method, parameters);
 
-        verify(objectStreamProvider).eval(realObject, method, parameters);
+        verify(callProcessor).eval(realObject, method, parameters);
     }
 
     private static class TestClass {

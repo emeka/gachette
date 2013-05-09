@@ -19,7 +19,7 @@
 package org.objectstream.instrumentation;
 
 import org.objectstream.exceptions.ExceptionUtils;
-import org.objectstream.spi.ObjectStreamProvider;
+import org.objectstream.spi.callprocessor.CallProcessor;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
@@ -27,10 +27,11 @@ import java.lang.reflect.Method;
 
 public class FieldEnhancer implements ObjectEnhancer {
 
-    private final ObjectStreamProvider objectStreamProvider;
 
-    public FieldEnhancer(ObjectStreamProvider objectStreamProvider) {
-        this.objectStreamProvider = objectStreamProvider;
+    private final CallProcessor callProcessor;
+
+    public FieldEnhancer(CallProcessor callProcessor) {
+        this.callProcessor = callProcessor;
     }
 
     @Override
@@ -46,7 +47,7 @@ public class FieldEnhancer implements ObjectEnhancer {
                     Object originalValue = null;
                     originalValue = read.invoke(object);
                     if (originalValue != null) {
-                        Object proxy = objectStreamProvider.createProxy(originalValue);
+                        Object proxy = callProcessor.createProxy(originalValue);
                         write.invoke(object, proxy);
                     }
                 }

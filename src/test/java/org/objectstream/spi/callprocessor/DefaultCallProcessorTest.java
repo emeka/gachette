@@ -16,7 +16,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.spi;
+package org.objectstream.spi.callprocessor;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -39,9 +39,9 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DefaultObjectStreamProviderTest {
+public class DefaultCallProcessorTest {
 
-    ObjectStreamProvider objectStreamProvider;
+    CallProcessor callProcessor;
 
     @Mock
     GraphProvider graphProvider;
@@ -68,7 +68,7 @@ public class DefaultObjectStreamProviderTest {
     @Before
     public void setup() throws NoSuchMethodException {
         context = new DefaultCallContext(){};
-        objectStreamProvider = new DefaultObjectStreamProvider(graphProvider, proxyFactory, context);
+        callProcessor = new DefaultCallProcessor(graphProvider,proxyFactory,context);
 
         primitiveReadMethod = TestClass.class.getMethod("getPrimitive", null);
         primitiveWriteMethod = TestClass.class.getMethod("setPrimitive", Integer.TYPE);
@@ -92,13 +92,13 @@ public class DefaultObjectStreamProviderTest {
         ObjectStreamProxy proxy = mock(ObjectStreamProxy.class);
         when(proxy.getOriginalObject()).thenReturn(testObject);
 
-        assertEquals(objectStreamProvider.calculateHashCode(testObject), objectStreamProvider.calculateHashCode(proxy));
+        assertEquals(callProcessor.calculateHashCode(testObject), callProcessor.calculateHashCode(proxy));
     }
 
     @Test
     public void testGetPropertyNewValueEmptyValueStack() {
         assertTrue(context.empty());
-        objectStreamProvider.eval(object, primitiveReadMethod, parameters);
+        callProcessor.eval(object, primitiveReadMethod, parameters);
 
         assertTrue(context.empty());
         verify(graphProvider).notifyChange(value);
@@ -109,7 +109,7 @@ public class DefaultObjectStreamProviderTest {
     public void testGetPropertyOldValueEmptyValueStack() {
         when(value.eval()).thenReturn(oldValue);
         assertTrue(context.empty());
-        objectStreamProvider.eval(object, primitiveReadMethod, parameters);
+        callProcessor.eval(object, primitiveReadMethod, parameters);
 
         assertTrue(context.empty());
         verify(graphProvider, never()).notifyChange(any(Value.class));
@@ -121,7 +121,7 @@ public class DefaultObjectStreamProviderTest {
         context.push(parentValue);
 
         assertEquals(1, context.depth());
-        objectStreamProvider.eval(object, primitiveReadMethod, parameters);
+        callProcessor.eval(object, primitiveReadMethod, parameters);
 
         assertEquals(1, context.depth());
         assertEquals(parentValue, context.peek());
@@ -133,7 +133,7 @@ public class DefaultObjectStreamProviderTest {
     @Test
     public void testInvokeNonVoidMethod() {
         assertTrue(context.empty());
-        objectStreamProvider.eval(object, nonVoidMethod, parameters);
+        callProcessor.eval(object, nonVoidMethod, parameters);
 
         assertTrue(context.empty());
         verify(graphProvider).notifyChange(value);
@@ -142,7 +142,7 @@ public class DefaultObjectStreamProviderTest {
 
     @Test
     public void testSetPrimitiveProperty() {
-        objectStreamProvider.eval(testObject, primitiveWriteMethod, new Object[]{new Integer(33)});
+        callProcessor.eval(testObject, primitiveWriteMethod, new Object[]{new Integer(33)});
 
         assertEquals(33, testObject.getPrimitive());
         verify(graphProvider).invalidate(any(Value.class));
@@ -151,7 +151,7 @@ public class DefaultObjectStreamProviderTest {
     @Test
     public void testSetObjectProperty() {
         Object object = new Object();
-        objectStreamProvider.eval(testObject, objectWriteMethod, new Object[]{object});
+        callProcessor.eval(testObject, objectWriteMethod, new Object[]{object});
 
         assertEquals(object, testObject.getObject());
         verify(graphProvider, times(1)).invalidate(any(Value.class));
@@ -159,7 +159,7 @@ public class DefaultObjectStreamProviderTest {
 
     @Test
     public void testInvokeVoidMethod() {
-        objectStreamProvider.eval(testObject, voidMethod, new Object[]{new Integer(11)});
+        callProcessor.eval(testObject, voidMethod, new Object[]{new Integer(11)});
 
         assertEquals(11, testObject.state());
         verify(graphProvider, never()).invalidate(any(Value.class));
@@ -167,7 +167,7 @@ public class DefaultObjectStreamProviderTest {
 
     @Test
     public void testInvokeHashCode() {
-        int hashCode = (Integer) objectStreamProvider.eval(testObject, hashCodeMethod, new Object[]{});
+        int hashCode = (Integer) callProcessor.eval(testObject, hashCodeMethod, new Object[]{});
 
         assertEquals(testObject.hashCode(), hashCode);
         verify(graphProvider, never()).value(any(Evaluator.class));
@@ -175,13 +175,13 @@ public class DefaultObjectStreamProviderTest {
 
     @Test
     public void testInvokeEquals() {
-        assertTrue((Boolean) objectStreamProvider.eval(testObject, equalsMethod, new Object[]{testObject}));
+        assertTrue((Boolean) callProcessor.eval(testObject, equalsMethod, new Object[]{testObject}));
         verify(graphProvider, never()).value(any(Evaluator.class));
     }
 
     @Test
     public void testInvokeGetOriginalObject() {
-        assertSame(testObject, objectStreamProvider.eval(testObject, getOriginalObjectMethod, new Object[]{}));
+        assertSame(testObject, callProcessor.eval(testObject, getOriginalObjectMethod, new Object[]{}));
         verify(graphProvider, never()).value(any(Evaluator.class));
     }
 

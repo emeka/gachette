@@ -19,7 +19,8 @@
 package org.objectstream.instrumentation.collections;
 
 import org.objectstream.instrumentation.ObjectStreamProxy;
-import org.objectstream.spi.ObjectStreamProvider;
+import org.objectstream.spi.callprocessor.CallProcessor;
+import org.objectstream.spi.graphprovider.GraphProvider;
 import org.objectstream.value.Value;
 
 import java.util.Collection;
@@ -28,13 +29,16 @@ import java.util.Iterator;
 import java.util.Set;
 
 public class ObjectStreamCollection<E> implements ObjectStreamProxy, Collection<E>{
+
+    private final CallProcessor callProcessor;
+    private final GraphProvider graphProvider;
     private final Collection<E> collection;
-    private final ObjectStreamProvider objectStreamProvider;
     private final Set<Value> parents = new HashSet<>();
 
-    public ObjectStreamCollection(Collection<E> collection, ObjectStreamProvider objectStreamProvider) {
+    public ObjectStreamCollection(Collection<E> collection, CallProcessor callProcessor, GraphProvider graphProvider) {
+        this.callProcessor = callProcessor;
         this.collection = findOriginalCollection(collection);
-        this.objectStreamProvider = objectStreamProvider;
+        this.graphProvider = graphProvider;
     }
 
     @Override
@@ -134,14 +138,14 @@ public class ObjectStreamCollection<E> implements ObjectStreamProxy, Collection<
     }
 
     private void registerParentValue() {
-        if (!objectStreamProvider.getContext().empty()) {
-            parents.add(objectStreamProvider.getContext().peek());
+        if (!callProcessor.getContext().empty()) {
+            parents.add(callProcessor.getContext().peek());
         }
     }
 
     private void invalidateParentValues(){
         for(Value parent : parents){
-            objectStreamProvider.getGraphProvider().invalidate(parent);
+            graphProvider.invalidate(parent);
         }
     }
 

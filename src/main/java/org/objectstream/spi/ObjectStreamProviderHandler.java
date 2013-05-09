@@ -20,20 +20,20 @@ package org.objectstream.spi;
 
 
 import org.objectstream.instrumentation.MethodHandler;
-import org.objectstream.spi.ObjectStreamProvider;
+import org.objectstream.spi.callprocessor.CallProcessor;
 
 import java.lang.reflect.Method;
 
 public class ObjectStreamProviderHandler<T> implements MethodHandler {
     private final T realObject;
-    private final ObjectStreamProvider objectStreamProvider;
+    private final CallProcessor callProcessor;
 
-    public ObjectStreamProviderHandler(T realObject, ObjectStreamProvider stream) {
-        this.objectStreamProvider = stream;
+    public ObjectStreamProviderHandler(T realObject, CallProcessor stream) {
+        this.callProcessor = stream;
         this.realObject = realObject;
     }
 
     public Object handle(Object object, Method method, Object[] objects) {
-        return objectStreamProvider.eval(realObject, method, objects);
+        return callProcessor.eval(realObject, method, objects);
     }
 }

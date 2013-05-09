@@ -28,13 +28,15 @@ public interface GraphProvider {
 
     <M> void observe(Value<M> value, ValueObserver<M> observer); //
 
-
-
     void bind(Value parent, Value child);
 
     void unbind(Value parent, Value child);
 
+    void unbind(Object parent, Object child);
+
     void invalidate(Value readPropertyValue);
+
+    void invalidate(Object object);
 
     void notifyChange(Value value);
 

@@ -19,15 +19,11 @@
 package org.objectstream;
 
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.objectstream.model.A;
 import org.objectstream.model.B;
-import org.objectstream.model.C;
 import org.objectstream.model.D;
-import org.objectstream.value.Value;
-import org.objectstream.value.ValueObserver;
 
 import java.util.ArrayList;
 import java.util.Collection;

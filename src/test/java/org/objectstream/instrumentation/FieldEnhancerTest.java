@@ -23,7 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.objectstream.spi.ObjectStreamProvider;
+import org.objectstream.spi.callprocessor.CallProcessor;
 
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -34,14 +34,14 @@ public class FieldEnhancerTest {
     FieldEnhancer fieldEnhancer;
 
     @Mock
-    ObjectStreamProvider objectStreamProvider;
+    CallProcessor callProcessor;
 
     Object nonPrimitive = new Object();
     Object state = new Object();
 
     @Before
     public void setup(){
-        fieldEnhancer = new FieldEnhancer(objectStreamProvider);
+        fieldEnhancer = new FieldEnhancer(callProcessor);
     }
 
     @Test
@@ -53,8 +53,8 @@ public class FieldEnhancerTest {
 
         fieldEnhancer.enhance(testObject);
 
-        verify(objectStreamProvider).createProxy(nonPrimitive);
-        verify(objectStreamProvider,never()).createProxy(state);
+        verify(callProcessor).createProxy(nonPrimitive);
+        verify(callProcessor,never()).createProxy(state);
     }
 
     private static class TestClass {

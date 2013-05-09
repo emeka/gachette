@@ -20,8 +20,6 @@ package org.objectstream.context;
 
 import org.objectstream.value.Value;
 
-import java.util.Stack;
-
 public interface CallContext {
     Value getLastValue();
     void push(Value value);
