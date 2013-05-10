@@ -18,155 +18,119 @@
 
 package org.objectstream.instrumentation.collections;
 
-import org.objectstream.annotations.InvalidateValue;
-import org.objectstream.instrumentation.ObjectStreamProxy;
-import org.objectstream.spi.callprocessor.CallProcessor;
-import org.objectstream.spi.graphprovider.GraphProvider;
-import org.objectstream.value.Value;
-import org.objectstream.annotations.CacheValue;
+import org.objectstream.annotations.*;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 
-public class ObjectStreamCollection<E> implements ObjectStreamProxy, Collection<E>{
+public class CollectionProxy<E> implements Collection<E>{
+    private Collection<E> collection;
 
-    private final CallProcessor callProcessor;
-    private final GraphProvider graphProvider;
-    private final Collection<E> collection;
-    private final Set<Value> parents = new HashSet<>();
 
-    public ObjectStreamCollection(Collection<E> collection, CallProcessor callProcessor, GraphProvider graphProvider) {
-        this.callProcessor = callProcessor;
+    public void setCollection(Collection<E> collection) {
         this.collection = findOriginalCollection(collection);
-        this.graphProvider = graphProvider;
     }
 
-    @Override
-    public Collection<E> getOriginalObject() {
+    @DoNotCacheValue
+    public Collection<E> getCollection() {
         return collection;
     }
 
     @Override
     @CacheValue
     public int size() {
-        registerParentValue();
         return collection.size();
     }
 
     @Override
     @CacheValue
     public boolean isEmpty() {
-        registerParentValue();
         return collection.isEmpty();
     }
 
     @Override
     @CacheValue
     public boolean contains(Object o) {
-        registerParentValue();
         return collection.contains(o);
     }
 
     @Override
     @CacheValue
+    @Volatile
     public Iterator<E> iterator() {
-        registerParentValue();
         return collection.iterator();
     }
 
     @Override
     @CacheValue
     public Object[] toArray() {
-        registerParentValue();
         return collection.toArray();
     }
 
     @Override
     @CacheValue
     public <T> T[] toArray(T[] a) {
-        registerParentValue();
         return collection.toArray(a);
     }
 
     @Override
     @InvalidateValue
     public boolean add(E e) {
-        boolean result = collection.add(e);
-        invalidateParentValues();
-        return result;
+        return collection.add(e);
     }
 
     @Override
     @InvalidateValue
     public boolean remove(Object o) {
-        boolean result = collection.remove(o);
-        invalidateParentValues();
-        return result;
+        return collection.remove(o);
     }
 
     @Override
-    @InvalidateValue
+    @CacheValue
     public boolean containsAll(Collection<?> c) {
-        registerParentValue();
         return collection.containsAll(c);
     }
 
     @Override
     @InvalidateValue
     public boolean addAll(Collection<? extends E> c) {
-        boolean result = collection.addAll(c);
-        invalidateParentValues();
-        return result;
+        return collection.addAll(c);
     }
 
     @Override
     @InvalidateValue
     public boolean removeAll(Collection<?> c) {
-        boolean result = collection.removeAll(c);
-        invalidateParentValues();
-        return result;
+        return collection.removeAll(c);
     }
 
     @Override
     @InvalidateValue
     public boolean retainAll(Collection<?> c) {
-        boolean result = collection.retainAll(c);
-        invalidateParentValues();
-        return result;
+        return collection.retainAll(c);
     }
 
     @Override
     @InvalidateValue
     public void clear() {
         collection.clear();
-        invalidateParentValues();
     }
 
-    public void addParent(Value value){
-        parents.add(value);
+    @Override
+    public int hashCode(){
+        return collection.hashCode();
     }
 
-    public void removeParent(Value value){
-        parents.remove(value);
-    }
-
-    private void registerParentValue() {
-        if (!callProcessor.getContext().empty()) {
-            parents.add(callProcessor.getContext().peek());
+    @Override
+    public boolean equals(Object other){
+        if(!(other instanceof Collection)){
+            return false;
         }
-    }
-
-    private void invalidateParentValues(){
-        for(Value parent : parents){
-            graphProvider.invalidate(parent);
-        }
+        return collection.equals(findOriginalCollection((Collection<E>)other));
     }
 
     private Collection<E> findOriginalCollection(Collection<E> inputCollection){
-        if(inputCollection instanceof ObjectStreamCollection){
-            return findOriginalCollection(((ObjectStreamCollection) inputCollection).getOriginalObject());
+        if(inputCollection instanceof CollectionProxy){
+            return findOriginalCollection(((CollectionProxy) inputCollection).getCollection());
         } else {
             return inputCollection;
         }

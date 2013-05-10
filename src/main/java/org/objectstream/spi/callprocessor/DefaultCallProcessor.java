@@ -18,12 +18,16 @@
 
 package org.objectstream.spi.callprocessor;
 
+import org.objectstream.annotations.CacheValue;
+import org.objectstream.annotations.DoNotCacheValue;
+import org.objectstream.annotations.InvalidateValue;
+import org.objectstream.annotations.Volatile;
 import org.objectstream.context.CallContext;
 import org.objectstream.exceptions.ExceptionUtils;
 import org.objectstream.instrumentation.FieldEnhancer;
 import org.objectstream.instrumentation.ObjectStreamProxy;
 import org.objectstream.instrumentation.ProxyFactory;
-import org.objectstream.instrumentation.collections.ObjectStreamCollection;
+import org.objectstream.instrumentation.collections.CollectionProxy;
 import org.objectstream.spi.ObjectStreamProviderHandler;
 import org.objectstream.spi.graphprovider.GraphProvider;
 import org.objectstream.value.MethodEvaluator;
@@ -31,6 +35,7 @@ import org.objectstream.value.Value;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 
@@ -47,15 +52,12 @@ public class DefaultCallProcessor implements CallProcessor {
 
     @Override
     public <T> T createProxy(T object) {
-        if (object instanceof Collection) {
-            if (object instanceof ObjectStreamCollection) {
-                return object;
-            } else {
-                return (T) new ObjectStreamCollection((Collection) object, this, graphProvider);
-            }
+        T targetObject = object;
+        if (object instanceof Collection && !(object instanceof CollectionProxy)) {
+            targetObject = (T) new CollectionProxy<>();
+            ((CollectionProxy) targetObject).setCollection((Collection) object);
         }
-        //eval
-        return getProxyFactory().createObjectProxy(object, new ObjectStreamProviderHandler<>(object,this));
+        return getProxyFactory().createObjectProxy(targetObject, new ObjectStreamProviderHandler<>(targetObject, this));
     }
 
     @Override
@@ -73,87 +75,88 @@ public class DefaultCallProcessor implements CallProcessor {
     }
 
     @Override
-       public Object eval(Object object, Method method, Object[] parameters) {
-           String name = method.getName();
+    public Object eval(Object object, Method method, Object[] parameters) {
+        String name = method.getName();
 
-           //We do not intercept calculateHashCode and equals.
-           if ("equals".equals(name)) {
-               Object other = parameters[0] instanceof ObjectStreamProxy ? ((ObjectStreamProxy) parameters[0]).getOriginalObject() : parameters[0];
-               return object.equals(other) ? Boolean.TRUE : Boolean.FALSE;
-           } else if ("hashCode".equals(name)) {
-               return object.hashCode();
-           } else if ("getOriginalObject".equals(name)) {
-               return object;
-           }
+        //The order of the tests below is relevant.
+        if ("getOriginalObject".equals(name)) {
+            return object;
+        } else if (method.getAnnotation(DoNotCacheValue.class) != null) {
+            try {
+                return method.invoke(object, parameters);
+            } catch (Throwable e) {
+                throw ExceptionUtils.wrap(e);
+            }
+        } else if ("equals".equals(name)) {
+            Object other = parameters[0] instanceof ObjectStreamProxy ? ((ObjectStreamProxy) parameters[0]).getOriginalObject() : parameters[0];
+            return object.equals(other) ? Boolean.TRUE : Boolean.FALSE;
+        } else if ("hashCode".equals(name)) {
+            return object.hashCode();
+        }
 
-           Object res = null;
+        Object res = null;
 
-           if (isValue(method)) {
-               //here, the same value must be returned for the same parameters unless invalidated
-               //We talking about value in the sense of functional programming (no side effects)
-               Value value = graphProvider.value(new MethodEvaluator(object, method, parameters, this));   //enhance
-               getContext().push(value);
+        if (isValue(method)) {
+            //here, the same value must be returned for the same parameters unless invalidated
+            //We talking about value in the sense of functional programming (no side effects)
+            Value value = graphProvider.value(new MethodEvaluator(object, method, parameters, this));   //enhance
+            getContext().push(value);
 
-               Object oldValue = value.getValue();
-               res = value.eval(); //this call must be between the push and the pop
+            Object oldValue = value.getValue();
+            res = value.eval(); //this call must be between the push and the pop
 
-               getContext().pop();
-               if (!getContext().empty()) {
-                   graphProvider.bind(getContext().peek(), value);
-               }
+            getContext().pop();
+            if (!getContext().empty()) {
+                graphProvider.bind(getContext().peek(), value);
+            }
 
-               if (!res.equals(oldValue)) {
-                   graphProvider.notifyChange(value);
-               }
+            if (!res.equals(oldValue)) {
+                graphProvider.notifyChange(value);
+            }
 
-           } else {
-               //Here are the method call with side effects.
-               try {
-                   //This is a special case of "findDependentValues"
-                   Value readPropertyValue = findReadPropertyValue(object, method, parameters);
-                   Object oldPropertyValue = null;
-                   Object newPropertyValue = null;
+        } else {
+            //Here are the method call with side effects.
+            try {
+                //This is a special case of "findDependentValues"
+                Value readPropertyValue = findReadPropertyValue(object, method, parameters);
+                Object oldPropertyValue = null;
+                Object newPropertyValue = null;
 
-                   if (readPropertyValue != null) {
-                       oldPropertyValue = readPropertyValue.eval();
-                       newPropertyValue = parameters[0];
-                       if (newPropertyValue != null && newPropertyValue instanceof Collection) {
-                           if (!(newPropertyValue instanceof ObjectStreamCollection)) {
-                               newPropertyValue = createProxy(newPropertyValue);
-                               parameters[0] = newPropertyValue;
-                           }
-                           ((ObjectStreamCollection) newPropertyValue).addParent(readPropertyValue);
-                       }
-                   }
+                if (readPropertyValue != null) {
+                    oldPropertyValue = readPropertyValue.eval();
+                    newPropertyValue = parameters[0];
+                    if (newPropertyValue != null && newPropertyValue instanceof Collection) {
+                        if (!(newPropertyValue instanceof ObjectStreamProxy)) {
+                            newPropertyValue = createProxy(newPropertyValue);
+                            parameters[0] = newPropertyValue;
+                        }
+                    }
+                }
 
-                   res = method.invoke(object, parameters);
-                                                     //optimisation for properties
-                   if (readPropertyValue != null && oldPropertyValue != newPropertyValue) {
-                       graphProvider.invalidate(readPropertyValue);
-                       if (oldPropertyValue != null) {
-                           //Remove oldPropertyValue dependencies and any children dependencies in case of collection
-                          graphProvider.unbind(object, oldPropertyValue);
-                           if (oldPropertyValue instanceof Collection) {
-                               for (Object child : ((Collection) oldPropertyValue)) {
-                                   graphProvider.unbind(object, child);
-                               }
-                               if (!getContext().empty()) {
-                                   ((ObjectStreamCollection) newPropertyValue).removeParent(getContext().peek());
-                               }
-                           }
-                       } else {
-                           //If the previous value was null, we do not have any information about dependencies.  Therefore
-                           //we need to blast everything.
-                           graphProvider.invalidate(object);
-                       }
-                   }
-               } catch (Throwable e) {
-                   throw ExceptionUtils.wrap(e);
-               }
-           }
+                res = method.invoke(object, parameters);
+                //optimisation for properties
+                if (method.getAnnotation(InvalidateValue.class) != null) {
+                    graphProvider.invalidate(object);
+                } else {
+                    if (readPropertyValue != null && oldPropertyValue != newPropertyValue) {
+                        graphProvider.invalidate(readPropertyValue);
+                        if (oldPropertyValue != null) {
+                            //Remove oldPropertyValue dependencies and any children dependencies in case of collection
+                            graphProvider.unbind(object, oldPropertyValue);
+                        } else {
+                            //If the previous value was null, we do not have any information about dependencies.  Therefore
+                            //we need to blast everything.
+                            graphProvider.invalidate(object);
+                        }
+                    }
+                }
+            } catch (Throwable e) {
+                throw ExceptionUtils.wrap(e);
+            }
+        }
 
-           return res;
-       }
+        return res;
+    }
 
     public ProxyFactory getProxyFactory() {
         return proxyFactory;
@@ -164,6 +167,12 @@ public class DefaultCallProcessor implements CallProcessor {
     }
 
     private boolean isValue(Method method) {
+        if (method.getAnnotation(CacheValue.class) != null) {
+            return true;
+        }
+        if (method.getAnnotation(InvalidateValue.class) != null) {
+            return false;
+        }
         return method.getReturnType() != Void.TYPE;
     }
 

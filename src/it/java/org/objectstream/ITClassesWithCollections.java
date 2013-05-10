@@ -197,7 +197,7 @@ public class ITClassesWithCollections {
             return result;
         }
 
-        public void notify(Value<T> value) {
+        public void notify(CacheValue<T> value) {
             this.result = value.eval();
         }
     }

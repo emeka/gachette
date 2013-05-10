@@ -21,20 +21,13 @@ package org.objectstream.value;
 
 public class Value<M> {
 
-    private final Evaluator<M> calculator;
+    private final Evaluator<M> evaluator;
 
     private M value;
     private boolean dirty = true;
 
-    public Value(Evaluator calculator) {
-        this(calculator, false);
-    }
-
-    public Value(Evaluator calculator, boolean evaluate) {
-        this.calculator = calculator;
-        if (evaluate) {
-            eval();
-        }
+    public Value(Evaluator evaluator){
+        this.evaluator = evaluator;
     }
 
     public boolean isDirty() {
@@ -50,7 +43,7 @@ public class Value<M> {
     }
 
     public M eval() {
-        value = calculator.eval(value, dirty);
+        value = evaluator.eval(value, dirty);
         dirty = false;
 
         return value;
@@ -58,7 +51,7 @@ public class Value<M> {
 
     @Override
     public int hashCode() {
-        return calculator.hashCode();
+        return evaluator.hashCode();
     }
 
     @Override
@@ -68,10 +61,10 @@ public class Value<M> {
         if (this.getClass() != object.getClass()) return false;
         Value other = (Value) object;
 
-        return calculator.equals(other.calculator);
+        return evaluator.equals(other.evaluator);
     }
 
     public String toString() {
-        return String.format("Value %s = %s (dirty=%s)", calculator, value, dirty);
+        return String.format("Value %s = %s (dirty=%s)", evaluator, value, dirty);
     }
 }

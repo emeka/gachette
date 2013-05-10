@@ -61,12 +61,6 @@ public class ValueTest {
     }
 
     @Test
-    public void testCreationWithEval() {
-        value = new Value(calculator1, true);
-        assertFalse(value.isDirty());
-    }
-
-    @Test
     public void testSameCalculators() {
         Value value1 = new Value(calculator1);
         Value value2 = new Value(calculator1);

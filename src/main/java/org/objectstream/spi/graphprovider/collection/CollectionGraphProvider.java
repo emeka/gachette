@@ -28,10 +28,7 @@ import org.objectstream.value.Evaluator;
 import org.objectstream.value.Value;
 import org.objectstream.value.ValueObserver;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class CollectionGraphProvider implements GraphProvider {
     private final Map<Integer, Map<Integer, Set<Bind>>> binds = new HashMap<>();
@@ -112,6 +109,11 @@ Object o = cons.newInstance("JLabel");
     }
 
     @Override
+    public void bind(Object parent, Object child) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
     public void unbind(Value parent, Value child) {
         verify(parent);
         verify(child);
@@ -140,18 +142,13 @@ Object o = cons.newInstance("JLabel");
     }
 
     @Override
-    public Stream getStream() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
     public void invalidate(Value value) {
         verify(value);
         Set<Value> values = new HashSet<>();
         values.add(value);
         invalidate(values);
     }
-    
+
     /**
      * This method will unbind a child object from its parent.  It uses the binds registered by the
      * <code>registerBind()</code> method.
@@ -171,6 +168,11 @@ Object o = cons.newInstance("JLabel");
                     unbind(bind.getParent(), bind.getChild());
                     invalidate(bind.getParent());
                 }
+            }
+        }
+        if (child instanceof Collection) {
+            for (Object collectionObject : ((Collection) child)) {
+                unbind(parent, collectionObject);
             }
         }
     }

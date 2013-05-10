@@ -20,6 +20,8 @@ package org.objectstream.value;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.objectstream.annotations.DoNotCacheValue;
+import org.objectstream.annotations.Volatile;
 import org.objectstream.exceptions.ExceptionUtils;
 import org.objectstream.spi.callprocessor.CallProcessor;
 
@@ -32,18 +34,21 @@ public class MethodEvaluator<T> implements Evaluator<T> {
     private final Method method;
     private final Object[] parameters;
     private final CallProcessor callProcessor;
+    private final boolean cachable;
 
     public MethodEvaluator(Object object, Method method, Object[] parameters, CallProcessor callProcessor) {
         this.object = object;
         this.method = method;
         this.parameters = parameters;
         this.callProcessor = callProcessor;
+
+        this.cachable = method.getAnnotation(Volatile.class) == null;
     }
 
     @Override
     public T eval(T current, boolean dirty) {
 
-        if(!dirty){
+        if(cachable && !dirty){
             return current;
         }
 

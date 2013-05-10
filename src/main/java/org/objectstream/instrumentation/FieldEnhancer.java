@@ -44,9 +44,8 @@ public class FieldEnhancer implements ObjectEnhancer {
                 Method read = propertyDescriptor.getReadMethod();
                 Method write = propertyDescriptor.getWriteMethod();
                 if (!propertyDescriptor.getPropertyType().isPrimitive() && read != null && write != null) {
-                    Object originalValue = null;
-                    originalValue = read.invoke(object);
-                    if (originalValue != null) {
+                    Object originalValue = read.invoke(object);
+                    if (originalValue != null && !(originalValue instanceof ObjectStreamProxy)) {
                         Object proxy = callProcessor.createProxy(originalValue);
                         write.invoke(object, proxy);
                     }
