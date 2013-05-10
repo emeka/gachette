@@ -18,20 +18,20 @@
 
 package org.objectstream.api;
 
-import org.objectstream.spi.ObjectStreamProvider;
+import org.objectstream.spi.graphprovider.GraphProvider;
 import org.objectstream.value.Value;
 import org.objectstream.value.ValueObserver;
 
 public class FluentObserveWith {
-    private final ObjectStreamProvider objectStreamProvider;
+    private final GraphProvider graphProvider;
     private final Value value;
     
-    public FluentObserveWith(ObjectStreamProvider objectStreamProvider, Value value){
-        this.objectStreamProvider = objectStreamProvider;
+    public FluentObserveWith(GraphProvider graphProvider, Value value){
+        this.graphProvider = graphProvider;
         this.value = value;
     }
     
     public void with(ValueObserver observer) {
-        objectStreamProvider.observe(value, observer);
+        graphProvider.observe(value, observer);
     }
 }

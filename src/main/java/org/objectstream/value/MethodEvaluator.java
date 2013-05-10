@@ -20,8 +20,10 @@ package org.objectstream.value;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.objectstream.annotations.DoNotCacheValue;
+import org.objectstream.annotations.Volatile;
 import org.objectstream.exceptions.ExceptionUtils;
-import org.objectstream.spi.ObjectStreamProvider;
+import org.objectstream.spi.callprocessor.CallProcessor;
 
 import java.lang.reflect.Method;
 
@@ -31,18 +33,26 @@ public class MethodEvaluator<T> implements Evaluator<T> {
     private final Object object;
     private final Method method;
     private final Object[] parameters;
-    private final ObjectStreamProvider objectStreamProvider;
+    private final CallProcessor callProcessor;
+    private final boolean cachable;
 
-    public MethodEvaluator(Object object, Method method, Object[] parameters, ObjectStreamProvider objectStreamProvider) {
+    public MethodEvaluator(Object object, Method method, Object[] parameters, CallProcessor callProcessor) {
         this.object = object;
         this.method = method;
         this.parameters = parameters;
-        this.objectStreamProvider = objectStreamProvider;
+        this.callProcessor = callProcessor;
+
+        this.cachable = method.getAnnotation(Volatile.class) == null;
     }
 
     @Override
-    public T eval() {
-        objectStreamProvider.enhance(object);
+    public T eval(T current, boolean dirty) {
+
+        if(cachable && !dirty){
+            return current;
+        }
+
+        callProcessor.enhance(object);
 
         T result;
         try {
@@ -57,12 +67,17 @@ public class MethodEvaluator<T> implements Evaluator<T> {
     }
 
     @Override
+    public Object targetObject() {
+        return object;
+    }
+
+    @Override
     public int hashCode() {
-        //We use ProxyUtils.hashCode because the object hash code should not change if the object field values change.
+        //We use ProxyUtils.calculateHashCode because the object hash code should not change if the object field values change.
         //A MethodEvaluator should return the same hash code if calling the same method on the same object with the
         //same parameters.  This will cause problem when we are using a distributed solution spanning several VM as we
         //want to be able to send value update cross VM.  We will certainly need an id as Hibernate does.
-        return new HashCodeBuilder().append(objectStreamProvider.hashCode(object)).append(method).append(parameters).toHashCode();
+        return new HashCodeBuilder().append(callProcessor.calculateHashCode(object)).append(method).append(parameters).toHashCode();
     }
 
     @Override
@@ -73,7 +88,7 @@ public class MethodEvaluator<T> implements Evaluator<T> {
         MethodEvaluator other = (MethodEvaluator) otherObject;
 
         return new EqualsBuilder()
-                .append(objectStreamProvider.hashCode(object),objectStreamProvider.hashCode(other.object))
+                .append(callProcessor.calculateHashCode(object), callProcessor.calculateHashCode(other.object))
                 .append(method, other.method)
                 .append(parameters, other.parameters).isEquals();
     }

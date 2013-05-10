@@ -18,15 +18,14 @@
 
 package org.objectstream.context;
 
-import org.objectstream.instrumentation.MethodHandler;
 import org.objectstream.value.Value;
 
-import java.util.Stack;
-
 public interface CallContext {
-    void setLastValue(Value value);
     Value getLastValue();
-    Stack<MethodHandler> getMethodHandlerStack();
-    Stack<Value> getValueStack();
+    void push(Value value);
+    Value peek();
+    Value pop();
+    boolean empty();
     void reset();
+    int depth();
 }

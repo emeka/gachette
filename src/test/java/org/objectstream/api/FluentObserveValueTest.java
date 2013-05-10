@@ -23,7 +23,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.objectstream.context.CallContext;
-import org.objectstream.spi.ObjectStreamProvider;
+import org.objectstream.spi.callprocessor.CallProcessor;
+import org.objectstream.spi.graphprovider.GraphProvider;
 import org.objectstream.value.Value;
 
 import static org.junit.Assert.assertTrue;
@@ -31,9 +32,11 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FluentObserveValueTest {
+    @Mock
+    CallProcessor callProcessor;
 
     @Mock
-    ObjectStreamProvider objectStreamProvider;
+    GraphProvider graphProvider;
 
     @Mock
     CallContext callContext;
@@ -43,14 +46,14 @@ public class FluentObserveValueTest {
 
     @Test
     public void testValue(){
-        when(objectStreamProvider.getContext()).thenReturn(callContext);
+        when(callProcessor.getContext()).thenReturn(callContext);
         when(callContext.getLastValue()).thenReturn(value);
-        assertTrue((new FluentObserveValue(objectStreamProvider)).value(new Object()) instanceof FluentObserveWith);
+        assertTrue((new FluentObserveValue(callProcessor, graphProvider)).value(new Object()) instanceof FluentObserveWith);
     }
 
     @Test(expected = RuntimeException.class)
     public void testException(){
         when(callContext.getLastValue()).thenReturn(null);
-        assertTrue((new FluentObserveValue(objectStreamProvider)).value(new Object()) instanceof FluentObserveWith);
+        assertTrue((new FluentObserveValue(callProcessor, graphProvider)).value(new Object()) instanceof FluentObserveWith);
     }
 }

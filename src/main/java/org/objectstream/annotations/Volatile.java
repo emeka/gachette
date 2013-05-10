@@ -1,9 +1,16 @@
+package org.objectstream.annotations;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 /**
  * Copyright 2013 Emeka Mosanya, all rights reserved.
- *
+ * <p/>
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * Proprietary and confidential.
- *
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -16,22 +23,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.spi;
-
-import org.objectstream.value.Evaluator;
-import org.objectstream.value.Value;
-import org.objectstream.value.ValueObserver;
-
-public interface StreamProvider {
-    Value value(Evaluator calculator);
-
-    <M> void observe(Value<M> value, ValueObserver<M> observer); //
-
-    void bind(Value parent, Value child);
-
-    void unbind(Value parent, Value child);
-
-    void invalidate(Value readPropertyValue);
-
-    void notifyChange(Value value);
+@Target({ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Volatile {
 }

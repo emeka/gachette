@@ -1,9 +1,16 @@
+package org.objectstream.annotations;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 /**
  * Copyright 2013 Emeka Mosanya, all rights reserved.
- *
+ * <p/>
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * Proprietary and confidential.
- *
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -16,21 +23,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream;
-
-import org.objectstream.context.ThreadLocalCallContext;
-import org.objectstream.instrumentation.cglib.CglibProxyFactory;
-import org.objectstream.spi.callprocessor.CallProcessor;
-import org.objectstream.spi.callprocessor.DefaultCallProcessor;
-import org.objectstream.spi.graphprovider.collection.CollectionGraphProvider;
-
-public class DefaultObjectStreamFactory implements ObjectStreamFactory {
-    @Override
-    public ObjectStream create(){
-        CglibProxyFactory proxyFactory = new CglibProxyFactory();
-        CollectionGraphProvider graphProvider = new CollectionGraphProvider();
-        CallProcessor callProcessor = new DefaultCallProcessor(graphProvider, proxyFactory, new ThreadLocalCallContext());
-        DefaultObjectStream objectStream = new DefaultObjectStream(callProcessor, graphProvider);
-        return objectStream;
-    }
+@Target({ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface InvalidateValue {
 }

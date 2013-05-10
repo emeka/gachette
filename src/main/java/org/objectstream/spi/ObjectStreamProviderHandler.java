@@ -16,32 +16,24 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.api;
+package org.objectstream.spi;
 
+
+import org.objectstream.instrumentation.MethodHandler;
 import org.objectstream.spi.callprocessor.CallProcessor;
-import org.objectstream.spi.graphprovider.GraphProvider;
-import org.objectstream.value.Value;
 
-public class FluentObserveValue {
-    private static final String ERROR_BLURB =
-            "Please ensure that stream.observe().value() takes a method call to an ObjectStream object as parameter," +
-            "for example stream.observe().value(foo.getResult()).with(observer) with foo an ObjectStream proxy";
+import java.lang.reflect.Method;
 
+public class ObjectStreamProviderHandler<T> implements MethodHandler {
+    private final T realObject;
     private final CallProcessor callProcessor;
-    private final GraphProvider graphProvider;
 
-    public FluentObserveValue(CallProcessor stream, GraphProvider graphProvider) {
+    public ObjectStreamProviderHandler(T realObject, CallProcessor stream) {
         this.callProcessor = stream;
-        this.graphProvider = graphProvider;
+        this.realObject = realObject;
     }
 
-    public FluentObserveWith value(Object methodCall) {
-        Value value = callProcessor.getContext().getLastValue();
-
-        if(value == null){
-            throw new RuntimeException("Context error: value not found. " + ERROR_BLURB);
-        }
-
-        return new FluentObserveWith(graphProvider, value);
+    public Object handle(Object object, Method method, Object[] objects) {
+        return callProcessor.eval(realObject, method, objects);
     }
 }

@@ -16,21 +16,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream;
+package org.objectstream.instrumentation;
 
-import org.objectstream.context.ThreadLocalCallContext;
-import org.objectstream.instrumentation.cglib.CglibProxyFactory;
-import org.objectstream.spi.callprocessor.CallProcessor;
-import org.objectstream.spi.callprocessor.DefaultCallProcessor;
-import org.objectstream.spi.graphprovider.collection.CollectionGraphProvider;
-
-public class DefaultObjectStreamFactory implements ObjectStreamFactory {
-    @Override
-    public ObjectStream create(){
-        CglibProxyFactory proxyFactory = new CglibProxyFactory();
-        CollectionGraphProvider graphProvider = new CollectionGraphProvider();
-        CallProcessor callProcessor = new DefaultCallProcessor(graphProvider, proxyFactory, new ThreadLocalCallContext());
-        DefaultObjectStream objectStream = new DefaultObjectStream(callProcessor, graphProvider);
-        return objectStream;
-    }
+public interface ClassTransformer {
 }

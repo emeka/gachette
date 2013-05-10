@@ -1,9 +1,16 @@
+package org.objectstream.annotations;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 /**
  * Copyright 2013 Emeka Mosanya, all rights reserved.
- *
+ * <p/>
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * Proprietary and confidential.
- *
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -16,33 +23,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.instrumentation;
-
-
-import org.objectstream.context.CallContext;
-
-import java.lang.reflect.Method;
-
-public class ContextualHandler<T> implements MethodHandler {
-    private final T realObj;
-    private final CallContext context;
-    private final MethodHandler defaultHandler;
-
-    public ContextualHandler(T realObj, CallContext context, MethodHandler defaultHandler) {
-        this.realObj = realObj;
-        this.context = context;
-        this.defaultHandler = defaultHandler;
-    }
-
-    public Object handle(Object o, Method method, Object[] objects) {
-        MethodHandler handler;
-
-        if(context.getMethodHandlerStack().empty()){
-            handler = defaultHandler;
-        } else {
-            handler = context.getMethodHandlerStack().peek();
-        }
-
-        return handler.handle(realObj, method, objects);
-    }
+@Target({ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface CacheValue {
 }

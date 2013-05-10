@@ -16,9 +16,31 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.value;
+package org.objectstream;
+
+import org.objectstream.api.FluentObserveValue;
+
+public interface Stream {
+
+    /**
+     * The ObjectStream.observe command will all an observer to a value using a fluent interface.
+     *
+     * Example: stream.observe().value(a.getResult()).with(observer)
+     *
+     * where a is a proxied stream object which has been created using stream.object() and
+     *       observer is a {@link org.objectstream.value.ValueObserver} object.
+     *
+     * @return the FluentObserveValue object used in the fluent api.
+     */
+    FluentObserveValue observe();
 
 
-public interface ListenerAdder {
-    <T> T to(T object);
+    /**
+     *
+     * @param object
+     * @param <T>
+     * @return
+     */
+    <T> T invoke(T object);
+
 }

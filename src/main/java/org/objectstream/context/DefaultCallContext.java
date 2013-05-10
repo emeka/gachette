@@ -18,26 +18,18 @@
 
 package org.objectstream.context;
 
-import org.objectstream.instrumentation.MethodHandler;
 import org.objectstream.value.Value;
 
 import java.util.Stack;
 
 public abstract class DefaultCallContext implements CallContext {
-    private final Stack<MethodHandler> methodHandlerStack = new Stack<>();
     private Value lastValue;
     private final Stack<Value> valueStack = new Stack<>();
 
     @Override
     public void reset() {
-        methodHandlerStack.clear();
         valueStack.clear();
         lastValue = null;
-    }
-
-    @Override
-    public void setLastValue(Value lastValue) {
-        this.lastValue = lastValue;
     }
 
     @Override
@@ -46,12 +38,28 @@ public abstract class DefaultCallContext implements CallContext {
     }
 
     @Override
-    public Stack<MethodHandler> getMethodHandlerStack() {
-        return methodHandlerStack;
+    public void push(Value value) {
+        valueStack.push(value);
+        lastValue = value;
     }
 
     @Override
-    public Stack<Value> getValueStack() {
-        return valueStack;
+    public Value peek() {
+        return valueStack.peek();
+    }
+
+    @Override
+    public Value pop() {
+        return valueStack.pop();
+    }
+
+    @Override
+    public boolean empty() {
+        return valueStack.empty();
+    }
+
+    @Override
+    public int depth(){
+        return valueStack.size();
     }
 }

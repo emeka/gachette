@@ -19,10 +19,11 @@
 package org.objectstream.instrumentation;
 
 
+import org.objectstream.instrumentation.collections.CollectionProxy;
+
 public abstract class AbstractProxyFactory implements ProxyFactory {
     public <T> T enhance(T object, ObjectEnhancer objectEnhancer){
-        ObjectEnhancer enhancer = objectEnhancer;
-        return enhancer.enhance(object);
+        return objectEnhancer.enhance(object);
     }
 
     public <T> T createObjectProxy(T object, MethodHandler handler) {

@@ -19,23 +19,26 @@
 package org.objectstream;
 
 import org.objectstream.api.FluentObserveValue;
-import org.objectstream.spi.ObjectStreamProvider;
+import org.objectstream.spi.callprocessor.CallProcessor;
+import org.objectstream.spi.graphprovider.GraphProvider;
 
 public class DefaultObjectStream implements ObjectStream {
-    private final ObjectStreamProvider objectStreamProvider;
+    private final CallProcessor callProcessor;
+    private final GraphProvider graphProvider;
 
 
-    public DefaultObjectStream(ObjectStreamProvider objectStreamProvider) {
-        this.objectStreamProvider = objectStreamProvider;
+    public DefaultObjectStream(CallProcessor callProcessor, GraphProvider graphProvider) {
+        this.callProcessor = callProcessor;
+        this.graphProvider = graphProvider;
     }
 
     @Override
     public <T> T object(T object) {
-        return objectStreamProvider.createProxy(object);
+        return callProcessor.createProxy(object);
     }
 
     @Override
     public FluentObserveValue observe() {
-        return new FluentObserveValue(objectStreamProvider);
+        return new FluentObserveValue(callProcessor, graphProvider);
     }
 }

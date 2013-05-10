@@ -47,27 +47,18 @@ public class ThreadLocalCallContextTest {
 
     @Test
     public void test() {
-        assertNotNull(context.getMethodHandlerStack());
-        assertNotNull(context.getValueStack());
         assertNull(context.getLastValue());
 
-        assertTrue(context.getMethodHandlerStack().empty());
-        assertTrue(context.getValueStack().empty());
+        assertTrue(context.empty());
 
-        context.getMethodHandlerStack().push(methodHandler);
-        context.getValueStack().push(value);
-        context.setLastValue(value);
-
+        context.push(value);
 
         assertNotNull(context.getLastValue());
-        assertFalse(context.getMethodHandlerStack().empty());
-        assertFalse(context.getValueStack().empty());
+        assertFalse(context.empty());
 
         context.reset();
 
         assertNull(context.getLastValue());
-        assertTrue(context.getMethodHandlerStack().empty());
-        assertTrue(context.getValueStack().empty());
-
+        assertTrue(context.empty());
     }
 }

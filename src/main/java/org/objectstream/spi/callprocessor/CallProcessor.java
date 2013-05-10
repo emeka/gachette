@@ -16,26 +16,13 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.spi;
+package org.objectstream.spi.callprocessor;
 
 import org.objectstream.context.CallContext;
-import org.objectstream.value.Evaluator;
-import org.objectstream.value.Value;
-import org.objectstream.value.ValueObserver;
 
 import java.lang.reflect.Method;
 
-public interface ObjectStreamProvider {
-    Value value(Object object, Method method, Object[] objects);
-
-    <M> void observe(Value<M> value, ValueObserver<M> observer); //
-
-    void bind(Value parent, Value child);
-
-    void invalidate(Value readPropertyValue);
-
-    void notifyChange(Value value);
-
+public interface CallProcessor {
     Object eval(Object object, Method method, Object[] objects);
 
     CallContext getContext();  //api
@@ -44,5 +31,5 @@ public interface ObjectStreamProvider {
 
     void enhance(Object object);
 
-    int hashCode(Object object);
+    int calculateHashCode(Object object);
 }

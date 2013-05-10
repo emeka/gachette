@@ -24,16 +24,11 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.objectstream.instrumentation.MethodHandler;
 import org.objectstream.instrumentation.ObjectStreamProxy;
-import org.objectstream.spi.ObjectStreamProvider;
 
 import static org.junit.Assert.assertTrue;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JavassistProxyFactoryTest {
-
-    @Mock
-    ObjectStreamProvider objectStreamProvider;
-
     @Mock
     MethodHandler handler;
 

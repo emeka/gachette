@@ -16,42 +16,46 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.value;
+package org.objectstream.model;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-public class Value<M> {
+import java.util.Collection;
 
-    private final Evaluator<M> evaluator;
+public class D {
+    private Collection<A> collection;
+    private long value;
 
-    private M value;
-    private boolean dirty = true;
-
-    public Value(Evaluator evaluator){
-        this.evaluator = evaluator;
+    public void setValue(long value) {
+        this.value = value;
     }
 
-    public boolean isDirty() {
-        return dirty;
+    public long getValue() {
+        return this.value;
     }
 
-    public void setDirty() {
-        this.dirty = true;
+    public long getResult() {
+        long result = value;
+        if (collection != null) {
+            for (A a : collection) {
+                result += a.getResult();
+            }
+        }
+        return result;
     }
 
-    public M getValue() {
-        return value;
+    public Collection<A> getCollection() {
+        return collection;
     }
 
-    public M eval() {
-        value = evaluator.eval(value, dirty);
-        dirty = false;
-
-        return value;
+    public void setCollection(Collection<A> collection) {
+        this.collection = collection;
     }
 
     @Override
     public int hashCode() {
-        return evaluator.hashCode();
+        return new HashCodeBuilder(17, 37).append(value).append(collection).toHashCode();
     }
 
     @Override
@@ -59,12 +63,7 @@ public class Value<M> {
         if (object == this) return true;
         if (object == null) return false;
         if (this.getClass() != object.getClass()) return false;
-        Value other = (Value) object;
-
-        return evaluator.equals(other.evaluator);
-    }
-
-    public String toString() {
-        return String.format("Value %s = %s (dirty=%s)", evaluator, value, dirty);
+        D other = (D) object;
+        return new EqualsBuilder().append(value, other.value).append(collection, other.collection).isEquals();
     }
 }

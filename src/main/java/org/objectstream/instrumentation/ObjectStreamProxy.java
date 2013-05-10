@@ -18,6 +18,9 @@
 
 package org.objectstream.instrumentation;
 
+import org.objectstream.annotations.DoNotCacheValue;
+
 public interface ObjectStreamProxy {
+    @DoNotCacheValue
     Object getOriginalObject();
 }

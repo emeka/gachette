@@ -16,21 +16,31 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.objectstream.instrumentation;
+package org.objectstream.spi.graphprovider;
 
+import org.objectstream.Stream;
+import org.objectstream.value.Evaluator;
+import org.objectstream.value.Value;
+import org.objectstream.value.ValueObserver;
 
-import org.objectstream.spi.ObjectStreamProvider;
+import java.util.Collection;
 
-import java.lang.reflect.Method;
+public interface GraphProvider {
+    Value value(Evaluator calculator);
 
-public class EvalHandler<T> implements MethodHandler {
-    private final ObjectStreamProvider objectStreamProvider;
+    <M> void observe(Value<M> value, ValueObserver<M> observer); //
 
-    public EvalHandler(ObjectStreamProvider stream) {
-        this.objectStreamProvider = stream;
-    }
+    void bind(Value parent, Value child);
 
-    public Object handle(Object object, Method method, Object[] objects) {
-        return objectStreamProvider.eval(object, method, objects);
-    }
+    void bind(Object parent, Object child);
+
+    void unbind(Value parent, Value child);
+
+    void unbind(Object parent, Object child);
+
+    void invalidate(Value value);
+
+    void invalidate(Object object);
+
+    void notifyChange(Value value);
 }
