@@ -1,4 +1,4 @@
-objectstream
-============
+Gachette
+========
 
-Stream Computing on object graph
+A dependency graph cache.
