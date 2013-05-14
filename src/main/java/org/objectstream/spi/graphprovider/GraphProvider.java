@@ -18,12 +18,9 @@
 
 package org.objectstream.spi.graphprovider;
 
-import org.objectstream.Stream;
 import org.objectstream.value.Evaluator;
 import org.objectstream.value.Value;
 import org.objectstream.value.ValueObserver;
-
-import java.util.Collection;
 
 public interface GraphProvider {
     Value value(Evaluator calculator);
@@ -31,8 +28,6 @@ public interface GraphProvider {
     <M> void observe(Value<M> value, ValueObserver<M> observer); //
 
     void bind(Value parent, Value child);
-
-    void bind(Object parent, Object child);
 
     void unbind(Value parent, Value child);
 
