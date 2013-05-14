@@ -18,7 +18,10 @@
 
 package org.objectstream.instrumentation.collections;
 
-import org.objectstream.annotations.*;
+import org.objectstream.annotations.CacheValue;
+import org.objectstream.annotations.DoNotCacheValue;
+import org.objectstream.annotations.InvalidateValue;
+import org.objectstream.annotations.Volatile;
 
 import java.util.Collection;
 import java.util.Iterator;

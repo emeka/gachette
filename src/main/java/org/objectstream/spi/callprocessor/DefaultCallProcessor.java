@@ -21,7 +21,6 @@ package org.objectstream.spi.callprocessor;
 import org.objectstream.annotations.CacheValue;
 import org.objectstream.annotations.DoNotCacheValue;
 import org.objectstream.annotations.InvalidateValue;
-import org.objectstream.annotations.Volatile;
 import org.objectstream.context.CallContext;
 import org.objectstream.exceptions.ExceptionUtils;
 import org.objectstream.instrumentation.FieldEnhancer;
@@ -35,7 +34,6 @@ import org.objectstream.value.Value;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 
@@ -102,6 +100,7 @@ public class DefaultCallProcessor implements CallProcessor {
             Value value = graphProvider.value(new MethodEvaluator(object, method, parameters, this));   //enhance
             getContext().push(value);
 
+            //TODO: add a value.will
             Object oldValue = value.getValue();
             res = value.eval(); //this call must be between the push and the pop
 
@@ -110,6 +109,7 @@ public class DefaultCallProcessor implements CallProcessor {
                 graphProvider.bind(getContext().peek(), value);
             }
 
+            //TODO: This should be handled by the value or the graph
             if (!res.equals(oldValue)) {
                 graphProvider.notifyChange(value);
             }
@@ -185,7 +185,7 @@ public class DefaultCallProcessor implements CallProcessor {
                 if (write != null && write.equals(method)) {
                     Method read = propertyDescriptor.getReadMethod();
                     if (read != null && read.getParameterTypes().length == 0) {
-                        result = graphProvider.value(new MethodEvaluator(object, read, new Object[]{}, this)); //enhance
+                        result = graphProvider.value(new MethodEvaluator(object, read, null, this)); //enhance
                     }
                 }
             }

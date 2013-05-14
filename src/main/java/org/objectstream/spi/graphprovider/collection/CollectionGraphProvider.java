@@ -21,7 +21,6 @@ package org.objectstream.spi.graphprovider.collection;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.objectstream.Stream;
 import org.objectstream.instrumentation.ObjectStreamProxy;
 import org.objectstream.spi.graphprovider.GraphProvider;
 import org.objectstream.value.Evaluator;
@@ -106,11 +105,6 @@ Object o = cons.newInstance("JLabel");
         parents.add(parent);
 
         registerBind(parent, child);
-    }
-
-    @Override
-    public void bind(Object parent, Object child) {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
