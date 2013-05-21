@@ -1,2 +1,0 @@
-The benchmark tools used by this software is derived from Benchy (https://github.com/pveentjer/Benchy)
-Copyright 2012 Peter Veentjer
