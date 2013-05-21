@@ -28,7 +28,6 @@ public class DefaultGachetteFactory implements GachetteFactory {
         CglibProxyFactory proxyFactory = new CglibProxyFactory();
         CollectionGraphProvider graphProvider = new CollectionGraphProvider();
         CallProcessor callProcessor = new DefaultCallProcessor(graphProvider, proxyFactory, new ThreadLocalCallContext());
-        DefaultGachette gachette = new DefaultGachette(callProcessor, graphProvider);
-        return gachette;
+        return new DefaultGachette(callProcessor, graphProvider);
     }
 }
