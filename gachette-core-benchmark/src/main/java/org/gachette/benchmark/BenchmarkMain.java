@@ -13,6 +13,10 @@ public class BenchmarkMain {
         List<String> argList = new ArrayList<>();
         argList.add("--run-name");
         argList.add(benchmarkClass.getName());
+        //argList.add("--instrument");
+        //argList.add("micro");
+        argList.add("--print-config");
+        argList.add("--verbose");
         argList.addAll(Arrays.asList(args));
 
         CaliperMain.main(benchmarkClass, argList.toArray(new String[]{}));

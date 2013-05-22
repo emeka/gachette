@@ -1,12 +1,19 @@
 package org.gachette.benchmark;
 
 import com.google.caliper.Benchmark;
+import com.google.caliper.Param;
 import org.gachette.DefaultGachetteFactory;
 import org.gachette.Gachette;
 import org.gachette.GachetteFactory;
 import org.gachette.benchmark.model.Node;
 
 public class OneObjectBenchmark extends Benchmark {
+
+    @Param({"1", "10"})
+    private int depth;
+    @Param({"1", "10"})
+    private int fanout;
+
 
     private Node node;
     private Node gachetteNode;
@@ -16,12 +23,10 @@ public class OneObjectBenchmark extends Benchmark {
 
     @Override
     protected void setUp() {
-        node = new Node();
-        node.setValue(10);
+        node = buildTree(10, depth, fanout, false);
 
         gachette = factory.create();
-        gachetteNode = gachette.object(new Node());
-        gachetteNode.setValue(10);
+        gachetteNode = node = buildTree(10, depth, fanout, true);
     }
 
     public long timeWithoutGachette(long reps) {
@@ -44,5 +49,25 @@ public class OneObjectBenchmark extends Benchmark {
 
     public static void main(String[] args) throws Exception {
         BenchmarkMain.main(OneObjectBenchmark.class, args);
+    }
+
+    private Node buildTree(long value, int depth, int fanout, boolean isGachette) {
+        Node root = null;
+        if (depth > 0) {
+            if (isGachette) {
+                root = gachette.object(new Node());
+            } else {
+                root = new Node();
+            }
+            root.setValue(value);
+        }
+
+        if (depth > 1) {
+            for (int i = 0; i < fanout; i++) {
+                root.addChild(buildTree(value, depth - 1, fanout, isGachette));
+            }
+        }
+
+        return root;
     }
 }
