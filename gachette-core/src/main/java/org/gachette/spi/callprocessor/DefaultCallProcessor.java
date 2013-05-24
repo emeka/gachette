@@ -58,6 +58,7 @@ public class DefaultCallProcessor implements CallProcessor {
 
     @Override
     public void enhance(Object object) {
+        //TODO: get rid of the new
         getProxyFactory().enhance(object, new FieldEnhancer(this));  //createProxy
     }
 
@@ -95,7 +96,7 @@ public class DefaultCallProcessor implements CallProcessor {
         if (isValue(method)) {
             //here, the same value must be returned for the same parameters unless invalidated
             //We talking about value in the sense of functional programming (no side effects)
-            Value value = graphProvider.value(new MethodEvaluator(object, method, parameters, this));   //enhance
+            Value value = graphProvider.value(object, method, parameters, this);   //enhance
             getContext().push(value);
 
             //TODO: add a value.will
@@ -183,7 +184,7 @@ public class DefaultCallProcessor implements CallProcessor {
                 if (write != null && write.equals(method)) {
                     Method read = propertyDescriptor.getReadMethod();
                     if (read != null && read.getParameterTypes().length == 0) {
-                        result = graphProvider.value(new MethodEvaluator(object, read, null, this)); //enhance
+                        result = graphProvider.value(object, read, null, this); //enhance
                     }
                 }
             }

@@ -16,11 +16,11 @@
 
 package org.gachette.value;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.gachette.annotations.Volatile;
 import org.gachette.exceptions.ExceptionUtils;
 import org.gachette.spi.callprocessor.CallProcessor;
+import org.gachette.utils.EqualsUtil;
+import org.gachette.utils.HashCodeUtil;
 
 import java.lang.reflect.Method;
 
@@ -34,9 +34,16 @@ public class MethodEvaluator<T> implements Evaluator<T> {
     private final boolean cachable;
 
     public MethodEvaluator(Object object, Method method, Object[] parameters, CallProcessor callProcessor) {
+        if (object == null) {
+            throw new RuntimeException("Object cannot be null;");
+        }
+        if (method == null) {
+            throw new RuntimeException("Method cannot be null;");
+        }
+
         this.object = object;
         this.method = method;
-        this.parameters = parameters == null || parameters.length == 0 ? null: parameters;
+        this.parameters = parameters == null || parameters.length == 0 ? null : parameters;
         this.callProcessor = callProcessor;
 
         this.cachable = method.getAnnotation(Volatile.class) == null;
@@ -45,7 +52,7 @@ public class MethodEvaluator<T> implements Evaluator<T> {
     @Override
     public T eval(T current, boolean dirty) {
 
-        if(cachable && !dirty){
+        if (cachable && !dirty) {
             return current;
         }
 
@@ -74,20 +81,27 @@ public class MethodEvaluator<T> implements Evaluator<T> {
         //A MethodEvaluator should return the same hash code if calling the same method on the same object with the
         //same parameters.  This will cause problem when we are using a distributed solution spanning several VM as we
         //want to be able to send value update cross VM.  We will certainly need an id as Hibernate does.
-        return new HashCodeBuilder().append(callProcessor.calculateHashCode(object)).append(method).append(parameters).toHashCode();
+
+        int result = HashCodeUtil.SEED;
+        result = HashCodeUtil.hash(result, HashCodeUtil.identityHash(object));
+        result = HashCodeUtil.hash(result, method);
+        result = HashCodeUtil.hash(result, parameters);
+
+        return result;
     }
 
     @Override
     public boolean equals(Object otherObject) {
-        if (otherObject == this) return true;
-        if (otherObject == null) return false;
-        if (this.getClass() != otherObject.getClass()) return false;
+        if(!EqualsUtil.isSameClass(this, otherObject)){
+            return false;
+        }
         MethodEvaluator other = (MethodEvaluator) otherObject;
 
-        return new EqualsBuilder()
-                .append(callProcessor.calculateHashCode(object), callProcessor.calculateHashCode(other.object))
-                .append(method, other.method)
-                .append(parameters, other.parameters).isEquals();
+        boolean result = EqualsUtil.same(true, object, other.object);
+        result = EqualsUtil.equals(result,method, other.method);
+        result = EqualsUtil.equals(result,parameters, other.parameters);
+
+        return result;
     }
 
     public String toString() {

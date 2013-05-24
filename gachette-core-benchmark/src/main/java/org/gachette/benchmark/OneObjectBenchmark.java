@@ -9,9 +9,9 @@ import org.gachette.benchmark.model.Node;
 
 public class OneObjectBenchmark extends Benchmark {
 
-    @Param({"1", "10"})
+    @Param({"5"})
     private int depth;
-    @Param({"1", "10"})
+    @Param({"5"})
     private int fanout;
 
 

@@ -16,12 +16,15 @@
 
 package org.gachette.spi.graphprovider;
 
+import org.gachette.spi.callprocessor.CallProcessor;
 import org.gachette.value.Evaluator;
 import org.gachette.value.Value;
 import org.gachette.value.ValueObserver;
 
+import java.lang.reflect.Method;
+
 public interface GraphProvider {
-    Value value(Evaluator calculator);
+    Value value(Object object, Method method, Object[] parameters, CallProcessor callProcessor);
 
     <M> void observe(Value<M> value, ValueObserver<M> observer); //
 

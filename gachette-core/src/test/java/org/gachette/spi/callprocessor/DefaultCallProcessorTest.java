@@ -78,7 +78,7 @@ public class DefaultCallProcessorTest {
         equalsMethod = TestClass.class.getMethod("equals", Object.class);
         getOriginalObjectMethod = TestClass.class.getMethod("getOriginalObject", null);
 
-        when(graphProvider.value(any(Evaluator.class))).thenReturn(value);
+        when(graphProvider.value(anyObject(), any(Method.class), any(Object[].class), any(CallProcessor.class))).thenReturn(value);
         when(value.getValue()).thenReturn(oldValue);
         when(value.eval()).thenReturn(newValue);
 
@@ -168,19 +168,19 @@ public class DefaultCallProcessorTest {
         int hashCode = (Integer) callProcessor.eval(testObject, hashCodeMethod, new Object[]{});
 
         assertEquals(testObject.hashCode(), hashCode);
-        verify(graphProvider, never()).value(any(Evaluator.class));
+        verify(graphProvider, never()).value(anyObject(), any(Method.class), any(Object[].class), any(CallProcessor.class));
     }
 
     @Test
     public void testInvokeEquals() {
         assertTrue((Boolean) callProcessor.eval(testObject, equalsMethod, new Object[]{testObject}));
-        verify(graphProvider, never()).value(any(Evaluator.class));
+        verify(graphProvider, never()).value(anyObject(), any(Method.class), any(Object[].class), any(CallProcessor.class));
     }
 
     @Test
     public void testInvokeGetOriginalObject() {
         assertSame(testObject, callProcessor.eval(testObject, getOriginalObjectMethod, new Object[]{}));
-        verify(graphProvider, never()).value(any(Evaluator.class));
+        verify(graphProvider, never()).value(anyObject(), any(Method.class), any(Object[].class), any(CallProcessor.class));
     }
 
     private static class TestClass {

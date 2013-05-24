@@ -16,6 +16,9 @@
 
 package org.gachette.spi.graphprovider.collection;
 
+import org.gachette.model.A;
+import org.gachette.model.B;
+import org.gachette.spi.callprocessor.CallProcessor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,9 +27,11 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.gachette.context.CallContext;
 import org.gachette.instrumentation.ProxyFactory;
 import org.gachette.spi.graphprovider.collection.CollectionGraphProvider;
-import org.gachette.value.Evaluator;
 import org.gachette.value.Value;
 import org.gachette.value.ValueObserver;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -42,8 +47,14 @@ public class CollectionGraphProviderTest {
     @Mock
     CallContext context;
 
+    Object object1, object2;
+
+    Method method1, method2;
+
+    Object[] parameters1, parameters2;
+
     @Mock
-    Evaluator evaluator1, evaluator2;
+    CallProcessor callProcessor;
 
     @Mock
     ValueObserver observer;
@@ -52,26 +63,28 @@ public class CollectionGraphProviderTest {
     Value unknownValue;
 
     @Before
-    public void setup() {
+    public void setup() throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
         streamProvider = new CollectionGraphProvider();
-        when(evaluator1.eval(anyObject(), anyBoolean())).thenReturn(null);
-        when(evaluator2.eval(anyObject(), anyBoolean())).thenReturn(null);
+        method1 = A.class.getMethod("getValue",null);
+        method2 = B.class.getMethod("getValue",null);
+        object1 = new A();
+        object2 = new B();
     }
 
     @Test
     public void testValue() {
-        Value value1 = streamProvider.value(evaluator1);
+        Value value1 = streamProvider.value(object1, method1, parameters1, callProcessor);
 
         //calling twice with the same evaluator should return the same value
-        assertEquals(value1, streamProvider.value(evaluator1));
+        assertEquals(value1, streamProvider.value(object1, method1, parameters1, callProcessor));
 
-        Value value2 = streamProvider.value(evaluator2);
+        Value value2 = streamProvider.value(object2, method2, parameters2, callProcessor);
         assertNotSame(value1, value2);
     }
 
     @Test
     public void testObserveAndNotify() {
-        Value value1 = streamProvider.value(evaluator1);
+        Value value1 = streamProvider.value(object1, method1, parameters1,callProcessor);
 
         streamProvider.observe(value1, observer); //should notify value1
         streamProvider.observe(value1, observer); //should not notify value1 since observer already exists
@@ -83,8 +96,8 @@ public class CollectionGraphProviderTest {
 
     @Test
     public void testBindAndUnbind() {
-        Value value1 = streamProvider.value(evaluator1);
-        Value value2 = streamProvider.value(evaluator2);
+        Value value1 = streamProvider.value(object1, method1, parameters1,callProcessor);
+        Value value2 = streamProvider.value(object2, method2, parameters2,callProcessor);
         streamProvider.bind(value1, value2);
 
         streamProvider.observe(value1, observer); //should notify value1
@@ -99,15 +112,15 @@ public class CollectionGraphProviderTest {
     }
 
     @Test(expected = RuntimeException.class)
-    public void testBindUnknownValue(){
-        Value value1 = streamProvider.value(evaluator1);
+    public void testBindUnknownValue() {
+        Value value1 = streamProvider.value(object1, method1, parameters1,callProcessor);
         streamProvider.bind(value1, unknownValue);
     }
 
     @Test
     public void testInvalidation() {
-        Value value1 = streamProvider.value(evaluator1);
-        Value value2 = streamProvider.value(evaluator2);
+        Value value1 = streamProvider.value(object1, method1, parameters1,callProcessor);
+        Value value2 = streamProvider.value(object2, method2, parameters2,callProcessor);
 
         streamProvider.bind(value1, value2);
         streamProvider.observe(value1, observer); //should notify value1

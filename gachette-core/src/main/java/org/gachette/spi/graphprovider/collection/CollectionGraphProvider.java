@@ -20,11 +20,14 @@ package org.gachette.spi.graphprovider.collection;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.gachette.instrumentation.GachetteProxy;
+import org.gachette.spi.callprocessor.CallProcessor;
 import org.gachette.spi.graphprovider.GraphProvider;
 import org.gachette.value.Evaluator;
+import org.gachette.value.MethodEvaluator;
 import org.gachette.value.Value;
 import org.gachette.value.ValueObserver;
 
+import java.lang.reflect.Method;
 import java.util.*;
 
 public class CollectionGraphProvider implements GraphProvider {
@@ -33,7 +36,7 @@ public class CollectionGraphProvider implements GraphProvider {
     private final Map<Integer, Set<Value>> values = new HashMap<>();
 
     private final Set<Value> nodes = new HashSet<>();
-    private final Map<Evaluator, Value> nodeMap = new HashMap<>();
+    private final Map<Integer, Value> nodeMap = new HashMap<>();
     private final Map<Value, Set<ValueObserver>> nodeObservers = new HashMap<>();
 
     private final Map<Value, Set<Value>> nodeParents = new HashMap<>();
@@ -60,16 +63,17 @@ Object o = cons.newInstance("JLabel");
     }
 
     @Override
-    public Value value(Evaluator calculator) {
-        Value value = nodeMap.get(calculator);
+    public Value value(Object object, Method method, Object[] parameters, CallProcessor callProcessor) {
+        int evaluatorKey = calculateEvaluatorKey(object, method, parameters);
+        Value value = nodeMap.get(evaluatorKey);
         if (value == null) {
-            value = new Value(calculator);
+            value = new Value(new MethodEvaluator(object, method, parameters, callProcessor));
             nodes.add(value);
-            nodeMap.put(calculator, value);
+            nodeMap.put(evaluatorKey, value);
         }
 
         //
-        Integer objectHash = calculateHashCode(calculator.targetObject());
+        Integer objectHash = calculateHashCode(object);
         objects.put(value, objectHash);
         Set<Value> objectValues = values.get(objectHash);
         if (objectValues == null) {
@@ -79,6 +83,16 @@ Object o = cons.newInstance("JLabel");
         objectValues.add(value);
 
         return value;
+    }
+
+    private int calculateEvaluatorKey(Object object, Method method, Object[] parameters) {
+        int hash = 1;
+        hash = hash * 17 + object.hashCode();
+        hash = hash *31 + method.hashCode();
+        if(parameters != null) {
+            hash = hash * 13 + Arrays.hashCode(parameters);
+        }
+        return hash;
     }
 
     @Override
