@@ -10,29 +10,33 @@ import org.gachette.benchmark.model.Node;
 public class OneObjectBenchmark extends Benchmark {
 
     @Param({"5"})
-    private int depth;
+    private int depth = 5;
     @Param({"5"})
-    private int fanout;
+    private int fanout = 5;
 
 
-    private Node node;
-    private Node gachetteNode;
+    private final Node node;
+    private final Node gachetteNode;
 
-    private GachetteFactory factory = new DefaultGachetteFactory();
-    private Gachette gachette;
+    private final GachetteFactory factory = new DefaultGachetteFactory();
+    private final Gachette gachette = factory.create();
+
+
+    public OneObjectBenchmark() {
+        super();
+        node = buildTree(10, depth, fanout, false);
+        gachetteNode = buildTree(10, depth, fanout, true);
+    }
 
     @Override
     protected void setUp() {
-        node = buildTree(10, depth, fanout, false);
 
-        gachette = factory.create();
-        gachetteNode = node = buildTree(10, depth, fanout, true);
     }
 
     public long timeWithoutGachette(long reps) {
         long result = 0;
         for (long i = 0; i < reps; i++) {
-            result += node.getValue();
+            result += node.getResult();
         }
 
         return result;
@@ -41,11 +45,23 @@ public class OneObjectBenchmark extends Benchmark {
     public long timeWithGachette(long reps) {
         long result = 0;
         for (long i = 0; i < reps; i++) {
-            result += gachetteNode.getValue();
+            result += gachetteNode.getResult();
         }
 
         return result;
     }
+
+    /**
+     * This is the absolute minimal benchmark. It does nothing but time the rep loop.
+     */
+
+    public long timeIncrement(long reps) {
+        long result = 0;
+        for (; result < reps; result++) {
+        }
+        return result;
+    }
+
 
     public static void main(String[] args) throws Exception {
         BenchmarkMain.main(OneObjectBenchmark.class, args);

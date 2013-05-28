@@ -12,9 +12,9 @@ public class Node {
         for(Node child : children){
             result += child.getValue();
         }
-        try {
+/*        try {
             Thread.sleep(10);
-        } catch (InterruptedException e) {}
+        } catch (InterruptedException e) {}*/
 
         return result;
     }
